@@ -1,0 +1,44 @@
+{
+  "root": true,
+  "env": {
+    "node": true
+  },
+  "compilerOptions": {
+    "module": "commonjs",
+    "moduleResolution": "Node",
+    "declaration": true,
+    "removeComments": true,
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
+    "allowSyntheticDefaultImports": true,
+    "lib": ["esnext", "esnext.asynciterable", "DOM"],
+    "target": "esnext",
+    "sourceMap": true,
+    "outDir": "./dist",
+    "allowJs": true,
+    "checkJs": false,
+    "rootDir": "./",
+    "baseUrl": "./",
+    "strict": true,
+    "strictPropertyInitialization": false,
+    "noImplicitThis": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "resolveJsonModule": true,
+    "types": ["jest", "node"],
+    "typeRoots": [
+      "@types",
+      "./node_modules/@types",
+      "@types/express/index.d.ts",
+      "@types/index.d.ts"
+    ],
+    "paths": {
+      "~/*": ["src/*"],
+      "@src/*": ["src/*"]
+    },
+    "incremental": true
+  },
+  "include": ["./**/*"],
+  "exclude": ["node_modules", "dist", "build"]
+}

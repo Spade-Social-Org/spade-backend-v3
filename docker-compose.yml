@@ -1,0 +1,83 @@
+version: '3.9'
+services:
+  app:
+    container_name: ecommerce_app
+    build:
+      context: ./
+      dockerfile: Dockerfile
+      args:
+        - NODE_ENV=development
+    ports:
+      - 9900:9001
+    depends_on:
+      - db
+      - redis
+    restart: always
+    tty: false
+    environment:
+      DB_HOST: db
+    profiles: ['dev']
+
+  app_test:
+    environment:
+      - NODE_ENV=test
+      - POSTGRES_TEST_HOST=test-db
+      - POSTGRES_TEST_PORT=5432
+      - POSTGRES_TEST_USER=test_admin
+      - POSTGRES_TEST_PASSWORD=password
+      - POSTGRES_TEST_DB=ecommerce
+    build:
+      context: ./
+      dockerfile: Dockerfile.test
+      args:
+        - NODE_ENV=test
+    # command: bash ./src/__test__/cmd.sh
+    depends_on:
+      - 'test-db'
+      - redis
+    restart: always
+    tty: false
+    profiles: ['test']
+
+  redis:
+    image: redis:7.0
+    volumes:
+      - redisdata:/data
+    ports:
+      - 16379:6379
+    tty: false
+    profiles: ['dev']
+
+  db:
+    container_name: ecommerce_db
+    # image: postgis/postgis:15-master
+    image: postgres:13-alpine
+    volumes:
+      - ../databases/pgdata:/var/lib/postgresql/data
+    env_file:
+      - ./.env
+    ports:
+      - 15433:5432
+    restart: always
+    environment:
+      POSTGRES_USER: dev_user
+      POSTGRES_PASSWORD: dev_password
+      POSTGRES_DB: spade-dev_database
+    tty: false
+    profiles: ['db', 'dev']
+
+  test-db:
+    container_name: ecommerce_test_db
+    image: postgis/postgis:15-master
+    environment:
+      - POSTGRES_USER=test_admin
+      - POSTGRES_PASSWORD=password
+    ports:
+      - '5429:5432'
+    restart: always
+    tty: false
+    profiles: ['test']
+
+volumes:
+  pgdata:
+  redisdata:

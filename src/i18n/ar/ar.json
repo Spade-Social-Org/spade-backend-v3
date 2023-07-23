@@ -1,0 +1,12 @@
+{
+    "messages_server_error": "خطأ فى الخادم",
+    "messages_item_not_found": "العنصر غير موجود",
+    "user_not_found": "المستخدم غير موجود",
+    "messages_unauthorized": "لم يتم التوثيق",
+    "messages_validation_error": "بيانات غير صحيحة",
+    "email_exists_before": "البريد الالكترونى موجود مسبقا",
+    "user_registered": "تم التسجيل بنجاح",
+    "check_order_products": "تحقق من عناصر الطلب",
+    "order_created": "تم الطلب بنجاح",
+    " messages_bad_request": "طلب سيء"
+  }

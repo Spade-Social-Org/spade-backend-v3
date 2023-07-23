@@ -1,0 +1,13 @@
+{
+  "messages_server_error": "Server Error",
+  " messages_bad_request": "Bad Request",
+  "messages_item_not_found": "Item not found",
+  "user_not_found": "User not found",
+  "messages_unauthorized": "User unauthorized",
+  "messages_validation_error": "Validation error",
+  "email_exists_before": "Email address exists before",
+  "user_registered": "User registered successfully",
+  "check_order_products": "Check order products",
+  "order_created": "Order created successfully",
+  "get_zid_branch_error": "Error occurred while getting branches from zid"
+}

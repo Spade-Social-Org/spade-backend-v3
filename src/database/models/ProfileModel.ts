@@ -4,6 +4,7 @@ import {
   BodyTypeEnum,
   EthnicityEnum,
   GenderPreferenceEnum,
+  PersonalityEnum,
   RelationshipTypeEnum,
   ReligionEnum,
 } from '~/constant/ModelEnums';
@@ -34,6 +35,9 @@ export class ProfileModel extends BaseModel {
 
   @Column({ enum: GenderPreferenceEnum, nullable: true })
   gender_preference: GenderPreferenceEnum;
+
+  @Column({ enum: PersonalityEnum, nullable: true })
+  tag: PersonalityEnum;
 
   @Column({ enum: ReligionEnum, nullable: true })
   religion: ReligionEnum;

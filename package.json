@@ -80,6 +80,7 @@
     "reflect-metadata": "^0.1.13",
     "resend": "^0.17.1",
     "rxjs": "^7.8.1",
+    "slugify": "^1.6.6",
     "typeorm": "^0.3.17",
     "typeorm-seeding": "^1.6.1",
     "until-promise": "^0.3.0"

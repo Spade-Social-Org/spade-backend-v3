@@ -33,3 +33,8 @@ export enum EthnicityEnum {
   FRENCH = 'french',
   SPANISH = 'spanish',
 }
+
+export enum PersonalityEnum {
+  intJ = -100,
+  intY = 100,
+}

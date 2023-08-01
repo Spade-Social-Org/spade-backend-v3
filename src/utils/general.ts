@@ -6,6 +6,7 @@ import { ServerAppException } from '~/http/exceptions/ServerAppException';
 import { ResponseMessage } from '~/constant/ResponseMessageEnums';
 import { Response, Request, Express } from 'express';
 import { Multer } from 'multer';
+import slugify from 'slugify';
 
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
@@ -36,6 +37,14 @@ export const GenerateOTP = () => {
   }
 
   return code;
+};
+export const generateSlug = (text: string) => {
+  return slugify(text, {
+    lower: true,
+    strict: true,
+    replacement: '-',
+    remove: /[*+~.()'"!:@%]/g,
+  });
 };
 
 export const fileUpload = async (

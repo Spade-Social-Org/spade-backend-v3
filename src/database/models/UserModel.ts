@@ -13,6 +13,7 @@ import { ProfileModel } from './ProfileModel';
 import { PostModel } from './PostModel';
 import { MatchModel } from './MatchModel';
 import { LikeCacheModel } from './LikeCacheModel';
+import { FeedModel } from './feedModel';
 
 @Entity('users')
 export class UserModel extends BaseModel {
@@ -39,6 +40,9 @@ export class UserModel extends BaseModel {
 
   @OneToMany(() => FileModel, (fileModel) => fileModel.user)
   files: FileModel[];
+
+  @OneToMany(() => FeedModel, (feedModel) => feedModel.user)
+  feeds: FeedModel[];
 
   @OneToMany(() => AddressModel, (addressModel) => addressModel.user)
   addresses: AddressModel[];

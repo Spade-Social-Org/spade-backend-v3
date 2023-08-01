@@ -21,43 +21,29 @@ import {
   UseInterceptors,
   Request as nestjsRequest,
 } from '@nestjs/common';
-import { UserService } from './user.service';
+
 import { Response, Request, Express } from 'express';
 import { Multer } from 'multer';
-import { DiscoverDto, UpdateUserProfileDto } from './user.dto';
 
 import { FileInterceptor, FilesInterceptor } from '@nestjs/platform-express';
 import { BadRequestAppException } from '~/http/exceptions/BadRequestAppException';
 import { ResponseMessage } from '~/constant/ResponseMessageEnums';
+import { PostService } from './post.service';
 
-@ApiTags('User')
-@Controller('api/v1/users')
-export class UserController extends BaseAppController {
-  constructor(private readonly userService: UserService) {
+@ApiTags('Post')
+@Controller('api/v1/posts')
+export class PostController extends BaseAppController {
+  constructor(private readonly postService: PostService) {
     super();
   }
 
-  @ApiOperation({ summary: 'update profile' })
-  @ApiResponse({ status: 200, description: 'Ok.' })
-  @ApiResponse({ status: 500, description: 'Internal Server Error.' })
-  @Post('profile/update')
-  async updateProfile(
-    @Body() body: UpdateUserProfileDto,
-    @nestjsRequest() req: any,
-    @Res() res: Response,
-  ) {
-    const userId = req.user.userId;
-    const result = await this.userService.updateUserProfile(body, userId);
-    return this.getHttpResponse().setDataWithKey('data', result).send(req, res);
-  }
-
   @ApiConsumes('multipart/form-data')
-  @ApiOperation({ summary: 'add user  images' })
+  @ApiOperation({ summary: 'create post' })
   @ApiResponse({ status: 200, description: 'Ok.' })
   @ApiResponse({ status: 500, description: 'Internal Server Error.' })
   @UseInterceptors(FilesInterceptor('files'))
-  @Post('image')
-  async addImages(
+  @Post('')
+  async create(
     @Body() body: any,
     @UploadedFiles(
       new ParseFilePipeBuilder()
@@ -75,24 +61,17 @@ export class UserController extends BaseAppController {
     @Res() res: Response,
   ) {
     const userId = req.user.userId;
-    const result = await this.userService.addImages(files, userId);
+    const result = await this.postService.create(body, files, userId);
     return this.getHttpResponse().setDataWithKey('data', result).send(req, res);
   }
-  @ApiOperation({ summary: 'Discover users' })
+
+  @ApiOperation({ summary: 'Get user  feeds' })
   @ApiResponse({ status: 200, description: 'Ok.' })
   @ApiResponse({ status: 500, description: 'Internal Server Error.' })
-  @Post('discover')
-  async getUserFeeds(
-    @Body() body: DiscoverDto,
-    @nestjsRequest() req: any,
-    @Res() res: Response,
-  ) {
+  @Get('user/feeds')
+  async getUserFeeds(@nestjsRequest() req: any, @Res() res: Response) {
     const userId = req.user.userId;
-    const result = await this.userService.discovery(
-      userId,
-      body.longitude,
-      body.latitude,
-    );
+    const result = await this.postService.getUserFeeds(userId);
     return this.getHttpResponse().setDataWithKey('data', result).send(req, res);
   }
 }

@@ -93,7 +93,15 @@ export class UpdateUserProfileDto {
   @IsDateString()
   dob: Date;
 }
+export class DiscoverDto {
+  @ApiProperty()
+  @IsNumber()
+  longitude: number;
 
+  @ApiProperty()
+  @IsNumber()
+  latitude: number;
+}
 export class addAddressDto {
   country: string;
 

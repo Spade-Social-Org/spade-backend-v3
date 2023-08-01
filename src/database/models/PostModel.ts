@@ -9,6 +9,7 @@ import {
 import { BaseModel } from './BaseModel';
 import { FileModel } from './FileModel';
 import { UserModel } from './UserModel';
+import { FeedModel } from './feedModel';
 
 @Entity('posts')
 export class PostModel extends BaseModel {
@@ -18,6 +19,10 @@ export class PostModel extends BaseModel {
 
   @OneToMany(() => FileModel, (fileModel) => fileModel.post)
   files: FileModel[];
+
+  @OneToMany(() => FeedModel, (feedModel) => feedModel.post)
+  feeds: FeedModel[];
+
   @Index()
   @ManyToOne(() => UserModel, (userModel) => userModel.posts)
   @JoinColumn({ name: 'user_id' })

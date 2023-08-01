@@ -21,6 +21,7 @@ import { assign } from 'lodash';
 import { ProfileModel } from '~/database/models/ProfileModel';
 import { FileModel } from '~/database/models/FileModel';
 import { FileEntityType, FileType } from '~/constant/ModelEnums';
+import dataSource from '~/database/connections/default';
 
 @Injectable()
 export class UserService {
@@ -121,7 +122,7 @@ export class UserService {
   async updateUserProfile(
     payload: UpdateUserProfileDto,
     id: number,
-  ): Promise<void> {
+  ): Promise<UserModel> {
     try {
       const user = await this.findOneById(id);
       if (!user) throw new NotFoundAppException(ResponseMessage.NOT_FOUND);
@@ -134,7 +135,7 @@ export class UserService {
       }
       user.profile = profile;
 
-      await this.usersRepository.save(user);
+      return await this.usersRepository.save(user);
     } catch (error) {
       this.appLogger.logError(error);
       if (error instanceof BaseAppException) {
@@ -174,4 +175,73 @@ export class UserService {
     }
     return otp;
   }
+  async discovery(
+    userId: number,
+    longitude: number,
+    latitude: number,
+  ): Promise<void> {
+    try {
+      const user = await this.updateUserProfile(
+        { latitude, longitude } as UpdateUserProfileDto,
+        userId,
+      );
+      const minAge = user.profile.min_age;
+      const maxAge = user.profile.max_age;
+      // const genderPreference = user.profile.gender_preference.join(', ');
+      const query = `SELECT 
+      *, 
+      EXTRACT(
+        YEAR 
+        FROM 
+          AGE(CURRENT_DATE, profile.dob)
+      ) as age, 
+      (
+        6371 * acos(
+          cos(
+            radians($2)
+          ) * cos(
+            radians(profile.latitude)
+          ) * cos(
+            radians(profile.longitude) - radians($3)
+          ) + sin(
+            radians($2)
+          ) * sin(
+            radians($3)
+          )
+        )
+      ) AS distance 
+    FROM 
+      profiles profile 
+      inner join users users on users.profile_id = profile.id 
+    where 
+      EXTRACT(
+        YEAR 
+        FROM 
+          AGE(CURRENT_DATE, profile.dob)
+      ) BETWEEN ${minAge} 
+      AND ${maxAge} 
+     
+      and users.id not in ($1) 
+    ORDER BY 
+      distance;
+    `;
+      const profiles = await dataSource.manager.query(query, [
+        userId,
+        latitude,
+        longitude,
+      ]);
+
+      return profiles;
+    } catch (error) {
+      this.appLogger.logError(error);
+      if (error instanceof BaseAppException) {
+        throw error;
+      }
+      throw new ServerAppException(ResponseMessage.SERVER_ERROR);
+    }
+  }
 }
+// SELECT *,
+//        (6371 * acos(cos(radians(:provided_latitude)) * cos(radians(latitude)) * cos(radians(longitude) - radians(:provided_longitude)) + sin(radians(:provided_latitude)) * sin(radians(latitude)))) AS distance
+// FROM users
+// ORDER BY distance;

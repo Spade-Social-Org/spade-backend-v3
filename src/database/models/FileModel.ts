@@ -13,6 +13,9 @@ export class FileModel extends BaseModel {
   @Column({ type: 'varchar', nullable: true })
   file_path: string[];
 
+  @Column({ type: 'varchar', nullable: true })
+  file_url: string;
+
   @Column({ enum: FileType, nullable: true })
   file_type: FileType;
 

@@ -14,6 +14,7 @@ import {
   ParseFilePipe,
   ParseFilePipeBuilder,
   Post,
+  Query,
   Req,
   Res,
   UploadedFile,
@@ -29,6 +30,7 @@ import { FileInterceptor, FilesInterceptor } from '@nestjs/platform-express';
 import { BadRequestAppException } from '~/http/exceptions/BadRequestAppException';
 import { ResponseMessage } from '~/constant/ResponseMessageEnums';
 import { PostService } from './post.service';
+import { createPostDto } from './post.dto';
 
 @ApiTags('Post')
 @Controller('api/v1/posts')
@@ -44,7 +46,7 @@ export class PostController extends BaseAppController {
   @UseInterceptors(FilesInterceptor('files'))
   @Post('')
   async create(
-    @Body() body: any,
+    @Body() body: createPostDto,
     @UploadedFiles(
       new ParseFilePipeBuilder()
         .addFileTypeValidator({
@@ -69,9 +71,14 @@ export class PostController extends BaseAppController {
   @ApiResponse({ status: 200, description: 'Ok.' })
   @ApiResponse({ status: 500, description: 'Internal Server Error.' })
   @Get('user/feeds')
-  async getUserFeeds(@nestjsRequest() req: any, @Res() res: Response) {
+  async getUserFeeds(
+    @nestjsRequest() req: any,
+    @Res() res: Response,
+    @Query('is_story') is_story: boolean,
+  ) {
     const userId = req.user.userId;
-    const result = await this.postService.getUserFeeds(userId);
+
+    const result = await this.postService.getUserFeeds(userId, is_story);
     return this.getHttpResponse().setDataWithKey('data', result).send(req, res);
   }
 }

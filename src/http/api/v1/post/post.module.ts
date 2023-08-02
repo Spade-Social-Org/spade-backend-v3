@@ -8,10 +8,11 @@ import { FeedModel } from '~/database/models/feedModel';
 import { PostService } from './post.service';
 import { UserModule } from '../user/user.module';
 import { PostController } from './post.controller';
+import { MatchModel } from '~/database/models/MatchModel';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([PostModel, FileModel, FeedModel]),
+    TypeOrmModule.forFeature([PostModel, FileModel, FeedModel, MatchModel]),
     UserModule,
   ],
   providers: [PostService],

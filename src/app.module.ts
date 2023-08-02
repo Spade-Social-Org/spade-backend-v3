@@ -22,6 +22,7 @@ import redisConfig from './config/envs/redis.config';
 import { SharedModule } from './shared/shared.module';
 import { UserModule } from './http/api/v1/user/user.module';
 import { AuthModule } from './http/api/v1/auth/auth.module';
+import { PostModule } from './http/api/v1/post/post.module';
 
 @Module({
   imports: [
@@ -97,6 +98,7 @@ import { AuthModule } from './http/api/v1/auth/auth.module';
     SharedModule,
     UserModule,
     AuthModule,
+    PostModule,
   ],
   controllers: [],
   providers: [

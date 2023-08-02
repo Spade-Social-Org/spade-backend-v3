@@ -17,6 +17,10 @@ export class PostModel extends BaseModel {
   @Column({ type: 'varchar', nullable: true })
   description: string;
 
+  @Index()
+  @Column({ type: 'boolean', nullable: true, default: false })
+  is_story: boolean;
+
   @OneToMany(() => FileModel, (fileModel) => fileModel.post)
   files: FileModel[];
 

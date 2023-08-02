@@ -19,6 +19,7 @@ import { UserService } from '../user/user.service';
 import { MatchModel } from '~/database/models/MatchModel';
 import { FeedModel } from '~/database/models/feedModel';
 import dataSource from '~/database/connections/default';
+import { createPostDto } from './post.dto';
 
 @Injectable()
 export class PostService {
@@ -36,21 +37,26 @@ export class PostService {
     private userService: UserService,
   ) {}
   async create(
-    payload: PostModel,
-    files: Array<Express.Multer.File>,
+    createPayload: createPostDto,
+    _files: Array<Express.Multer.File>,
     userID: number,
   ): Promise<void> {
     try {
       //find the user
+      const { files, ...payload } = createPayload;
       const user = await this.userService.findOneById(userID);
       if (!user) {
         throw new BadRequestAppException(ResponseMessage.USER_NOT_FOUND);
       }
       payload.user = user;
+      if (payload.is_story) {
+        payload.is_story = true;
+      }
+
       //create the post
       const post = await this.postRepository.save(payload);
       //upload the file
-      await this.addImages(files, post);
+      await this.addImages(_files, post);
 
       //add it to  feed of all  the users matchers
       //TODO: MOVE THIS TO A QUEUE  TO BE PROCESSED BY A SEPERATE THREAD/PROCESS
@@ -103,7 +109,7 @@ export class PostService {
       throw new ServerAppException(ResponseMessage.SERVER_ERROR);
     }
   }
-  async getUserFeeds(userId: number): Promise<FeedModel[]> {
+  async getUserFeeds(userId: number, isStory = false): Promise<FeedModel[]> {
     //TODO: PAGINATION
     const query = `select 
     files.file_path as  gallery,
@@ -120,7 +126,14 @@ export class PostService {
     
   where 
     feed.user_id = $1
-    order by feed.created_at `;
+   `;
+    if (isStory) {
+      query.concat(`and 
+      post.is_story = true
+      and 
+      post.created_at > CURRENT_TIMESTAMP - INTERVAL '24 hours'`);
+    }
+    query.concat(`order by feed.created_at `);
     try {
       const feeds = await dataSource.manager.query(query, [userId]);
 

@@ -111,7 +111,8 @@ export class PostService {
   }
   async getUserFeeds(userId: number, isStory = false): Promise<FeedModel[]> {
     //TODO: PAGINATION
-    const query = `select 
+    let story = false;
+    let query = `select 
     files.file_path as  gallery,
     post.description ,
     poster."name" as poster_name ,
@@ -128,12 +129,15 @@ export class PostService {
     feed.user_id = $1
    `;
     if (isStory) {
-      query.concat(`and 
-      post.is_story = true
+      console.log(isStory);
+      story = true;
+      query = query.concat(`
       and 
       post.created_at > CURRENT_TIMESTAMP - INTERVAL '24 hours'`);
     }
-    query.concat(`order by feed.created_at `);
+    query = query.concat(`and 
+    post.is_story = ${story}
+    order by feed.created_at `);
     try {
       const feeds = await dataSource.manager.query(query, [userId]);
 

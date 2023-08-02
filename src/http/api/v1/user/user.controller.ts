@@ -1,4 +1,5 @@
 import {
+  ApiBearerAuth,
   ApiConsumes,
   ApiOperation,
   ApiResponse,
@@ -29,7 +30,7 @@ import { DiscoverDto, UpdateUserProfileDto } from './user.dto';
 import { FileInterceptor, FilesInterceptor } from '@nestjs/platform-express';
 import { BadRequestAppException } from '~/http/exceptions/BadRequestAppException';
 import { ResponseMessage } from '~/constant/ResponseMessageEnums';
-
+@ApiBearerAuth('Bearer')
 @ApiTags('User')
 @Controller('api/v1/users')
 export class UserController extends BaseAppController {

@@ -1,4 +1,9 @@
-import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 import { BaseAppController } from '../../base/BaseAppController';
 import {
   Body,
@@ -66,6 +71,7 @@ export class AuthController extends BaseAppController {
     return this.getHttpResponse().setDataWithKey('data', result).send(req, res);
   }
   //testing
+  @ApiBearerAuth('Bearer')
   @UseGuards(AuthGuard)
   @Get('profile')
   getProfile(@nestjsRequest() req: any) {

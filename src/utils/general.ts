@@ -7,11 +7,13 @@ import { ResponseMessage } from '~/constant/ResponseMessageEnums';
 import { Response, Request, Express } from 'express';
 import { Multer } from 'multer';
 import slugify from 'slugify';
+import processEnvObj from '~/config/envs';
+import streamifier from 'streamifier';
 
 cloudinary.config({
-  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-  api_key: process.env.CLOUDINARY_API_KEY,
-  api_secret: process.env.CLOUDINARY_API_SECRET,
+  cloud_name: processEnvObj.CLOUDINARY_CLOUD_NAME,
+  api_key: processEnvObj.CLOUDINARY_API_KEY,
+  api_secret: processEnvObj.CLOUDINARY_API_SECRET,
 });
 
 export const pathFromSrc = (path: string) => {
@@ -51,24 +53,31 @@ export const fileUpload = async (
   assets: Express.Multer.File | Express.Multer.File[],
 ) => {
   try {
+    console.log(assets);
     const url = [];
     assets = assets as Express.Multer.File[];
     if (assets.length) {
       for (const asset of assets as Express.Multer.File[]) {
-        const result = await cloudinary.uploader.upload(asset.path);
+        const uploadStr =
+          'data:image/jpeg;base64,' + asset.buffer.toString('base64');
+        const result = await cloudinary.uploader.upload(uploadStr);
         url.push(result.secure_url);
 
-        fs.unlinkSync(asset.path);
+        // fs.unlinkSync(asset.path);
       }
     } else {
       assets = assets as unknown as Express.Multer.File;
-      const result = await cloudinary.uploader.upload(assets.path);
+
+      const uploadStr =
+        'data:image/jpeg;base64,' + assets.buffer.toString('base64');
+      const result = await cloudinary.uploader.upload(uploadStr);
       url.push(result.secure_url);
-      fs.unlinkSync(assets.path);
+      //fs.unlinkSync(assets.path);
     }
 
     return url;
   } catch (error) {
+    console.log(error);
     throw new ServerAppException(ResponseMessage.SERVER_ERROR);
   }
 };

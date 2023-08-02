@@ -10,6 +10,7 @@ import { BadRequestAppException } from '~/http/exceptions/BadRequestAppException
 import { EmailService } from '~/shared/service/email.service';
 import { ServerAppException } from '~/http/exceptions/ServerAppException';
 import { AppLogger } from '~/shared/AppLogger';
+import { BaseAppException } from '~/http/exceptions/BaseAppException';
 
 @Injectable()
 export class AuthService {
@@ -56,42 +57,59 @@ export class AuthService {
       await this.emailService.sendEmail(emailOptions);
     } catch (error) {
       this.appLogger.logError(error);
+      if (error instanceof BaseAppException) {
+        throw error;
+      }
 
       throw new ServerAppException(ResponseMessage.SERVER_ERROR);
     }
   }
   async verifyOtp(otp: string): Promise<IUserAuth> {
-    const user = await this.userService.findOneByOtp(otp);
-    if (!user) {
-      throw new BadRequestAppException(ResponseMessage.USER_REGISTERED);
-    }
+    try {
+      const user = await this.userService.findOneByOtp(otp);
+      if (!user) {
+        throw new BadRequestAppException(ResponseMessage.USER_REGISTERED);
+      }
 
-    await this.userService.updateUser({ otp_verified: true }, user.id);
-    const _payload = {
-      userId: user.id,
-      name: user.name,
-      email: user.email,
-    };
-    return {
-      userInfo: _payload,
-      accessToken: await this.jwtService.signAsync(_payload),
-    };
+      await this.userService.updateUser({ otp_verified: true }, user.id);
+      const _payload = {
+        userId: user.id,
+        name: user.name,
+        email: user.email,
+      };
+      return {
+        userInfo: _payload,
+        accessToken: await this.jwtService.signAsync(_payload),
+      };
+    } catch (error) {
+      if (error instanceof BaseAppException) {
+        throw error;
+      }
+      throw new ServerAppException(ResponseMessage.SERVER_ERROR);
+    }
   }
   async signIn(email: string, plainPassword: string): Promise<IUserAuth> {
-    const user = await this.userService.findOneByEmail(email);
-    console.log({ user });
-    if (!user) {
-      throw new NotAuthorizedAppException(ResponseMessage.USER_UNAUTHORIZED);
-    }
+    try {
+      const user = await this.userService.findOneByEmail(email);
+      console.log({ user });
+      if (!user) {
+        throw new NotAuthorizedAppException(ResponseMessage.USER_UNAUTHORIZED);
+      }
 
-    if (!(await hashTextComparer(plainPassword, user.password))) {
-      throw new NotAuthorizedAppException(ResponseMessage.USER_UNAUTHORIZED);
-    }
+      if (!(await hashTextComparer(plainPassword, user.password))) {
+        throw new NotAuthorizedAppException(ResponseMessage.USER_UNAUTHORIZED);
+      }
 
-    const payload = { userId: user.id, name: user.name, email: user.email };
-    return {
-      userInfo: payload,
-      accessToken: await this.jwtService.signAsync(payload),
-    };
+      const payload = { userId: user.id, name: user.name, email: user.email };
+      return {
+        userInfo: payload,
+        accessToken: await this.jwtService.signAsync(payload),
+      };
+    } catch (error) {
+      if (error instanceof BaseAppException) {
+        throw error;
+      }
+      throw new ServerAppException(ResponseMessage.SERVER_ERROR);
+    }
   }
 }

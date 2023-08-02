@@ -29,6 +29,9 @@ export type ProcessEnv = {
   SMTP_PORT: number;
   SMTP_USER: string;
   RESEND_API_KEY: string;
+  CLOUDINARY_CLOUD_NAME: string;
+  CLOUDINARY_API_KEY: string;
+  CLOUDINARY_API_SECRET: string;
 
   SENTRY_DSN: string;
   SENTRY_ENV: string;

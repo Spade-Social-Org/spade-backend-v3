@@ -23,6 +23,7 @@ import { SharedModule } from './shared/shared.module';
 import { UserModule } from './http/api/v1/user/user.module';
 import { AuthModule } from './http/api/v1/auth/auth.module';
 import { PostModule } from './http/api/v1/post/post.module';
+import { EventsModule } from './http/api/v1/events/events.module';
 
 @Module({
   imports: [
@@ -87,9 +88,9 @@ import { PostModule } from './http/api/v1/post/post.module';
     //     },
     //   }),
     // }),
-    BullModule.registerQueue({
-      name: 'sync',
-    }),
+    // BullModule.registerQueue({
+    //   name: 'sync',
+    // }),
     TranslatorModule.forRoot({
       global: true,
       defaultLang: 'en',
@@ -99,6 +100,7 @@ import { PostModule } from './http/api/v1/post/post.module';
     UserModule,
     AuthModule,
     PostModule,
+    EventsModule,
   ],
   controllers: [],
   providers: [

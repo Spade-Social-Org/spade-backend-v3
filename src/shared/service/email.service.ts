@@ -44,8 +44,6 @@ export class EmailService {
       console.log(result);
     } catch (error) {
       this.appLogger.logError(error);
-
-      throw new ServerAppException(ResponseMessage.SERVER_ERROR);
     }
   }
 }

@@ -1,4 +1,5 @@
 import {
+  ApiBearerAuth,
   ApiConsumes,
   ApiOperation,
   ApiResponse,
@@ -33,6 +34,7 @@ import { PostService } from './post.service';
 import { createPostDto } from './post.dto';
 
 @ApiTags('Post')
+@ApiBearerAuth('Bearer')
 @Controller('api/v1/posts')
 export class PostController extends BaseAppController {
   constructor(private readonly postService: PostService) {

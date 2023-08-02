@@ -10,7 +10,7 @@ export class FileModel extends BaseModel {
   @Column({ enum: FileEntityType, nullable: true })
   entityType: FileEntityType;
 
-  @Column({ type: 'varchar', nullable: true })
+  @Column({ type: 'varchar', array: true, nullable: true })
   file_path: string[];
 
   @Column({ type: 'varchar', nullable: true })

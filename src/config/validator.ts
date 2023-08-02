@@ -1,5 +1,6 @@
 import { BadRequestException, ValidationPipe } from '@nestjs/common';
 import { first, values, has, set } from 'lodash';
+import { BadRequestAppException } from '~/http/exceptions/BadRequestAppException';
 
 export default new ValidationPipe({
   whitelist: true,
@@ -16,14 +17,6 @@ export default new ValidationPipe({
       {} as Record<string, string>,
     );
 
-    return new BadRequestException(
-      {
-        status: false,
-        code: 'DATA_VALIDATION_ERROR',
-        errors: formattedErrors,
-        message: 'Invalid data',
-      },
-      'Bad request',
-    );
+    return new BadRequestAppException(Object.values(formattedErrors)[0]);
   },
 });

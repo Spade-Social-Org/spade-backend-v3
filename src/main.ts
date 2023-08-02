@@ -9,6 +9,7 @@ import { NestExpressApplication } from '@nestjs/platform-express';
 import { useContainer } from 'class-validator';
 import { Response } from 'express';
 import appConfig from './config/envs/app.config';
+import { SecuritySchemeObject } from '@nestjs/swagger/dist/interfaces/open-api-spec.interface';
 
 async function bootstrap() {
   //Get app instance
@@ -47,6 +48,15 @@ async function bootstrap() {
     .setTitle('Spade')
     .setDescription('Spade')
     .setVersion('1.0')
+    .addBearerAuth(
+      {
+        type: 'http',
+        in: 'header',
+        schema: 'Bearer',
+        bearerFormat: 'JWT',
+      } as SecuritySchemeObject,
+      'Bearer',
+    )
     .setBasePath('/api')
     .build();
   const document = SwaggerModule.createDocument(app, config);

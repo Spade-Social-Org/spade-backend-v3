@@ -3,6 +3,8 @@ import {
   Entity,
   Index,
   JoinColumn,
+  JoinTable,
+  ManyToMany,
   OneToMany,
   OneToOne,
 } from 'typeorm';
@@ -14,6 +16,8 @@ import { PostModel } from './PostModel';
 import { MatchModel } from './MatchModel';
 import { LikeCacheModel } from './LikeCacheModel';
 import { FeedModel } from './feedModel';
+import { MessageModel } from './MessageModel';
+import { GroupModel } from './GroupsModel';
 
 @Entity('users')
 export class UserModel extends BaseModel {
@@ -44,6 +48,8 @@ export class UserModel extends BaseModel {
   @OneToMany(() => FeedModel, (feedModel) => feedModel.user)
   feeds: FeedModel[];
 
+  @OneToMany(() => MessageModel, (message) => message.user)
+  messages: MessageModel[];
   @OneToMany(() => AddressModel, (addressModel) => addressModel.user)
   addresses: AddressModel[];
 
@@ -67,4 +73,12 @@ export class UserModel extends BaseModel {
   })
   @JoinColumn({ name: 'profile_id' })
   profile: ProfileModel;
+
+  // @ManyToMany(() => GroupModel, (groupModels) => groupModels.users)
+  // @JoinTable({
+  //   name: 'user_groups',
+  //   joinColumn: { name: 'user_Id' },
+  //   inverseJoinColumn: { name: 'group_model_id' },
+  // })
+  // group_models: GroupModel[];
 }

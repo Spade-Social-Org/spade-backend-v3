@@ -23,7 +23,7 @@ import { SharedModule } from './shared/shared.module';
 import { UserModule } from './http/api/v1/user/user.module';
 import { AuthModule } from './http/api/v1/auth/auth.module';
 import { PostModule } from './http/api/v1/post/post.module';
-import { EventsModule } from './http/api/v1/events/events.module';
+import { GatewayModule } from './http/api/v1/gateway/gateway.module';
 
 @Module({
   imports: [
@@ -100,7 +100,7 @@ import { EventsModule } from './http/api/v1/events/events.module';
     UserModule,
     AuthModule,
     PostModule,
-    EventsModule,
+    GatewayModule,
   ],
   controllers: [],
   providers: [

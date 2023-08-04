@@ -23,7 +23,7 @@ import {
     origin: '*',
   },
 })
-export class FindMyMatchesGateway
+export class WebSocketGatewayServer
   implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect
 {
   //   constructor() {}
@@ -45,7 +45,8 @@ export class FindMyMatchesGateway
     this.logger.log(`Client disconnected: ${client.id}`);
   }
 
-  handleConnection(client: Socket, article_id: string) {
-    this.logger.log(`Client connected: ${client.id}`);
+  handleConnection(client: Socket) {
+    console.log(client);
+    this.logger.log(`Client connected:`, client);
   }
 }

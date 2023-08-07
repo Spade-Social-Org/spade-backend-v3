@@ -96,4 +96,16 @@ export class UserController extends BaseAppController {
     );
     return this.getHttpResponse().setDataWithKey('data', result).send(req, res);
   }
+  @ApiOperation({ summary: 'get matches current location ' })
+  @ApiResponse({ status: 200, description: 'Ok.' })
+  @ApiResponse({ status: 500, description: 'Internal Server Error.' })
+  @Get('current-location')
+  async getMatchesCurrentLocation(
+    @nestjsRequest() req: any,
+    @Res() res: Response,
+  ) {
+    const userId = req.user.userId;
+    const result = await this.userService.showMatchesInCurrentLocation(userId);
+    return this.getHttpResponse().setDataWithKey('data', result).send(req, res);
+  }
 }

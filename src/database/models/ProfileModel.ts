@@ -58,6 +58,9 @@ export class ProfileModel extends BaseModel {
   @Index()
   @Column({ type: 'decimal', nullable: true })
   latitude: number;
+  @Index()
+  @Column({ type: 'boolean', default: false })
+  share_location: boolean;
 
   @Column({ type: 'date', nullable: true })
   dob: Date;

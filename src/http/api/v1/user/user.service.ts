@@ -179,7 +179,7 @@ export class UserService {
     userId: number,
     longitude: number,
     latitude: number,
-  ): Promise<void> {
+  ): Promise<any> {
     try {
       const user = await this.updateUserProfile(
         { latitude, longitude } as UpdateUserProfileDto,
@@ -240,7 +240,53 @@ export class UserService {
       throw new ServerAppException(ResponseMessage.SERVER_ERROR);
     }
   }
+  async showMatchesInCurrentLocation(
+    userId: number,
+    latitude?: number,
+    longitude?: number,
+  ): Promise<any> {
+    const queryVariable = [userId];
+    try {
+      const query = `select 
+      profile.longitude ,
+      profile.longitude ,
+      userFiles.file_path as  gallery
+      users.id as user_id
+    from 
+      matches matches 
+      INNER JOIN users users  ON 
+      CASE 
+        WHEN matches.user_id_1 = $! THEN users.id = matches.user_id_2
+        else users.id = matches.user_id_1
+      end
+      inner join profiles profile on profile.id = users.profile_id 
+      left join files userFiles on userFiles.user_id  = users.id  and userFiles."entityType" = 'user'
+    where 
+      matches.user_id_1 = $1 
+      or matches.user_id_2 = $1
+      and profile.share_location  = true
+    `;
+      // if (latitude && longitude) {
+      //   queryVariable = [userId, latitude, longitude];
+
+      //   query = query.concat(`
+
+      // and profile.latitude  = $2
+      // and profile.longitude  = $3`);
+      // }
+      const users = await dataSource.manager.query(query, queryVariable);
+
+      return users;
+    } catch (error) {
+      this.appLogger.logError(error);
+      if (error instanceof BaseAppException) {
+        throw error;
+      }
+      throw new ServerAppException(ResponseMessage.SERVER_ERROR);
+    }
+  }
 }
+
 // SELECT *,
 //        (6371 * acos(cos(radians(:provided_latitude)) * cos(radians(latitude)) * cos(radians(longitude) - radians(:provided_longitude)) + sin(radians(:provided_latitude)) * sin(radians(latitude)))) AS distance
 // FROM users

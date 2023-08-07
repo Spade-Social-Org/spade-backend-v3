@@ -10,6 +10,7 @@ import { useContainer } from 'class-validator';
 import { Response } from 'express';
 import appConfig from './config/envs/app.config';
 import { SecuritySchemeObject } from '@nestjs/swagger/dist/interfaces/open-api-spec.interface';
+import { SocketIOAdapter } from './http/api/v1/gateway/websocketAdapter';
 
 async function bootstrap() {
   //Get app instance
@@ -24,6 +25,8 @@ async function bootstrap() {
   app.useGlobalInterceptors(new LoggerErrorInterceptor());
   app.useLogger(logger);
   app.flushLogs();
+  const adapter = new SocketIOAdapter(app);
+  app.useWebSocketAdapter(adapter);
 
   //Get app config
   const appConfigEnv = appConfig();
@@ -57,6 +60,7 @@ async function bootstrap() {
       } as SecuritySchemeObject,
       'Bearer',
     )
+    .setExternalDoc('Postman Collection', '/docs-json')
     .setBasePath('/api')
     .build();
   const document = SwaggerModule.createDocument(app, config);

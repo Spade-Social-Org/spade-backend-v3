@@ -15,6 +15,7 @@ import {
   ParseFilePipe,
   ParseFilePipeBuilder,
   Post,
+  Query,
   Req,
   Res,
   UploadedFile,
@@ -23,13 +24,14 @@ import {
   Request as nestjsRequest,
 } from '@nestjs/common';
 import { UserService } from './user.service';
-import { Response, Request, Express } from 'express';
+import { Response, Request, Express, query } from 'express';
 import { Multer } from 'multer';
 import { DiscoverDto, UpdateUserProfileDto } from './user.dto';
 
 import { FileInterceptor, FilesInterceptor } from '@nestjs/platform-express';
 import { BadRequestAppException } from '~/http/exceptions/BadRequestAppException';
 import { ResponseMessage } from '~/constant/ResponseMessageEnums';
+import { Public } from '~/shared/publicDecorator';
 @ApiBearerAuth('Bearer')
 @ApiTags('User')
 @Controller('api/v1/users')
@@ -99,13 +101,17 @@ export class UserController extends BaseAppController {
   @ApiOperation({ summary: 'get matches current location ' })
   @ApiResponse({ status: 200, description: 'Ok.' })
   @ApiResponse({ status: 500, description: 'Internal Server Error.' })
+  @Public()
   @Get('current-location')
   async getMatchesCurrentLocation(
+    @Query() query: { latitude: number; longitude: number },
     @nestjsRequest() req: any,
     @Res() res: Response,
   ) {
-    const userId = req.user.userId;
-    const result = await this.userService.showMatchesInCurrentLocation(userId);
+    const result = await this.userService.showMatchesInCurrentLocation(
+      query.latitude,
+      query.longitude,
+    );
     return this.getHttpResponse().setDataWithKey('data', result).send(req, res);
   }
 }

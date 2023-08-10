@@ -241,30 +241,39 @@ export class UserService {
     }
   }
   async showMatchesInCurrentLocation(
-    userId: number,
     latitude?: number,
     longitude?: number,
   ): Promise<any> {
-    const queryVariable = [userId];
     try {
+      console.log({ longitude, latitude });
+      if (!latitude && !longitude)
+        throw new BadRequestAppException(ResponseMessage.BAD_REQUEST);
       const query = `select 
       profile.longitude ,
       profile.longitude ,
-      userFiles.file_path as  gallery
+      userFiles.file_path as  gallery,
       users.id as user_id
     from 
-      matches matches 
-      INNER JOIN users users  ON 
-      CASE 
-        WHEN matches.user_id_1 = $! THEN users.id = matches.user_id_2
-        else users.id = matches.user_id_1
-      end
+    users users  
+      
       inner join profiles profile on profile.id = users.profile_id 
       left join files userFiles on userFiles.user_id  = users.id  and userFiles."entityType" = 'user'
     where 
-      matches.user_id_1 = $1 
-      or matches.user_id_2 = $1
-      and profile.share_location  = true
+    (
+      6371 * acos(
+        cos(
+          radians($1)
+        ) * cos(
+          radians(profile.latitude)
+        ) * cos(
+          radians(profile.longitude) - radians($2)
+        ) + sin(
+          radians($1)
+        ) * sin(
+          radians($2)
+        )
+      )
+    ) > 50
     `;
       // if (latitude && longitude) {
       //   queryVariable = [userId, latitude, longitude];
@@ -274,10 +283,14 @@ export class UserService {
       // and profile.latitude  = $2
       // and profile.longitude  = $3`);
       // }
-      const users = await dataSource.manager.query(query, queryVariable);
+      const users = await dataSource.manager.query(query, [
+        latitude,
+        longitude,
+      ]);
 
       return users;
     } catch (error) {
+      console.error(error);
       this.appLogger.logError(error);
       if (error instanceof BaseAppException) {
         throw error;

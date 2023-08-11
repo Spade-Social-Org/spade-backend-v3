@@ -22,6 +22,8 @@ import { ProfileModel } from '~/database/models/ProfileModel';
 import { FileModel } from '~/database/models/FileModel';
 import { FileEntityType, FileType } from '~/constant/ModelEnums';
 import dataSource from '~/database/connections/default';
+import { LikeCacheModel } from '~/database/models/LikeCacheModel';
+import { MatchModel } from '~/database/models/MatchModel';
 
 @Injectable()
 export class UserService {
@@ -35,6 +37,10 @@ export class UserService {
     private profileRepository: Repository<ProfileModel>,
     @InjectRepository(FileModel)
     private fileRepository: Repository<FileModel>,
+    @InjectRepository(LikeCacheModel)
+    private likeRepository: Repository<LikeCacheModel>,
+    @InjectRepository(MatchModel)
+    private matchRepository: Repository<MatchModel>,
   ) {}
   async createUser(payload: CreateUserDto): Promise<UserModel> {
     try {
@@ -289,6 +295,75 @@ export class UserService {
       ]);
 
       return users;
+    } catch (error) {
+      console.error(error);
+      this.appLogger.logError(error);
+      if (error instanceof BaseAppException) {
+        throw error;
+      }
+      throw new ServerAppException(ResponseMessage.SERVER_ERROR);
+    }
+  }
+  async getMatches(userId: number) {
+    try {
+      const query = `
+      SELECT 
+          u.id AS user_id,
+          u."name",
+          userFiles.file_url as image,
+          userFiles.file_path as gallery
+          
+      FROM matches m
+      INNER JOIN users u ON
+          CASE
+              WHEN m.user_id_1 = $1 THEN u.id = m.user_id_2
+              ELSE u.id = m.user_id_1
+          END
+      LEFT JOIN files userFiles ON userFiles.user_id = u.id AND userFiles."entityType" = 'user'
+      WHERE m.user_id_1 = $1 OR m.user_id_2 = $1;
+      `;
+      const users = await dataSource.manager.query(query, [userId]);
+
+      return users;
+    } catch (error) {
+      console.error(error);
+      this.appLogger.logError(error);
+      if (error instanceof BaseAppException) {
+        throw error;
+      }
+      throw new ServerAppException(ResponseMessage.SERVER_ERROR);
+    }
+  }
+  async likeUser(
+    likerId: number,
+    likeeId: number,
+  ): Promise<{ match: boolean }> {
+    try {
+      const [liker, likee, hasLikeLikedLiker] = await Promise.all([
+        this.findOneById(likerId),
+        this.findOneById(likeeId),
+        this.likeRepository.findOne({
+          where: { user_liker: likeeId, user_likee: likerId },
+        }),
+      ]);
+
+      const newLike = new LikeCacheModel();
+      newLike.liker = liker as UserModel;
+      newLike.likee = likee as UserModel;
+
+      if (hasLikeLikedLiker) {
+        const matchUsers = new MatchModel();
+        matchUsers.user1 = liker as UserModel;
+        matchUsers.user2 = likee as UserModel;
+        await Promise.all([
+          this.likeRepository.save(newLike),
+          this.matchRepository.save(matchUsers),
+        ]);
+        return { match: true };
+      } else {
+        await this.likeRepository.save(newLike);
+        return { match: false };
+      }
     } catch (error) {
       console.error(error);
       this.appLogger.logError(error);

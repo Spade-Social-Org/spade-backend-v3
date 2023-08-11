@@ -24,6 +24,7 @@ import { UserModule } from './http/api/v1/user/user.module';
 import { AuthModule } from './http/api/v1/auth/auth.module';
 import { PostModule } from './http/api/v1/post/post.module';
 import { GatewayModule } from './http/api/v1/gateway/gateway.module';
+import { MessageModule } from './http/api/v1/message/message.module';
 
 @Module({
   imports: [
@@ -101,6 +102,7 @@ import { GatewayModule } from './http/api/v1/gateway/gateway.module';
     AuthModule,
     PostModule,
     GatewayModule,
+    MessageModule,
   ],
   controllers: [],
   providers: [

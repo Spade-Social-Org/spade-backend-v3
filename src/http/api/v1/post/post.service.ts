@@ -46,7 +46,7 @@ export class PostService {
       const { files, ...payload } = createPayload;
       const user = await this.userService.findOneById(userID);
       if (!user) {
-        throw new BadRequestAppException(ResponseMessage.USER_NOT_FOUND);
+        throw new NotFoundAppException(ResponseMessage.USER_NOT_FOUND);
       }
       payload.user = user;
       if (payload.is_story) {

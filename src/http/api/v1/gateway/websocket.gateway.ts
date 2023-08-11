@@ -21,6 +21,7 @@ import { AuthenticatedSocket } from './gateway.interface';
 import { MatchModel } from '~/database/models/MatchModel';
 import { UserService } from '../user/user.service';
 import { UpdateUserProfileDto } from '../user/user.dto';
+import { MessageService } from '../message/message.service';
 
 @WebSocketGateway({
   cors: {
@@ -33,43 +34,48 @@ export class WebSocketGatewayServer
   constructor(
     @InjectRepository(MatchModel)
     private matchRepository: Repository<MatchModel>,
+    private messageService: MessageService,
     private userService: UserService,
   ) {}
 
   @WebSocketServer() server: Server;
   private logger: Logger = new Logger('AppGateway');
 
-  @SubscribeMessage('joinRoom')
+  @SubscribeMessage('')
   handleJoin(client: Socket, slug: string) {
     client.join(slug);
     this.logger.log(`Client id: ${slug}`);
   }
   @SubscribeMessage('message.private')
-  handlePrivateMessage(client: Socket, { content, to }: any) {
-    console.log(content, to);
-    this.server.to(to).emit('message.private', content);
+  async handlePrivateMessage(
+    client: AuthenticatedSocket,
+    { content, receiver_id }: any,
+  ) {
+    const message = await this.messageService.create({
+      content,
+      sender_id: client.user.userId,
+      receiver_id,
+    });
+    this.server
+      .to(`client-${receiver_id}`)
+      .emit('message.private', { content, sender_id: client.user.userId });
   }
   @SubscribeMessage('message.location')
   async handleShareLocation(
     client: AuthenticatedSocket,
     { longitude, latitude }: any,
   ) {
+    const room = 'message.location.changed';
+    client.join(room);
     const userId = client.user.userId;
-    const [user, matches] = await Promise.all([
-      this.userService.updateUserProfile(
-        { latitude, longitude } as UpdateUserProfileDto,
-        userId,
-      ),
-      this.matchRepository.find({
-        where: [{ user_id_1: userId }, { user_id_2: userId }],
-      }),
-    ]);
+    const user = await this.userService.updateUserProfile(
+      { latitude, longitude } as UpdateUserProfileDto,
+      userId,
+    );
 
-    matches.forEach((match) => {
-      this.server
-        .to(userId ? match.user_id_2.toString() : match.user_id_1.toString())
-        .emit('message.location', user);
-    });
+    this.server
+      .to(room)
+      .emit('message.location', { user, latitude, longitude });
   }
 
   afterInit(server: Server) {
@@ -82,7 +88,7 @@ export class WebSocketGatewayServer
 
   handleConnection(client: AuthenticatedSocket) {
     console.log(client.user);
-    client.join(client.user.userId);
+    client.join(`client-${client.user.userId}`);
     this.logger.log(`Client connected:`, client.user);
   }
 }

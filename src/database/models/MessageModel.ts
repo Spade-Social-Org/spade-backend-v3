@@ -13,7 +13,7 @@ export class MessageModel extends BaseModel {
   conversation_id: number;
 
   @Column({ type: 'text', nullable: true })
-  content: number;
+  content: string;
 
   @ManyToOne(() => UserModel, (userModel) => userModel.messages)
   @JoinColumn({ name: 'sender_id' })

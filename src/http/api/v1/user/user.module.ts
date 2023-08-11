@@ -7,6 +7,8 @@ import { UserController } from './user.controller';
 import { AddressModel } from '~/database/models/addressModel';
 import { ProfileModel } from '~/database/models/ProfileModel';
 import { FileModel } from '~/database/models/FileModel';
+import { LikeCacheModel } from '~/database/models/LikeCacheModel';
+import { MatchModel } from '~/database/models/MatchModel';
 
 @Module({
   imports: [
@@ -15,6 +17,8 @@ import { FileModel } from '~/database/models/FileModel';
       AddressModel,
       ProfileModel,
       FileModel,
+      LikeCacheModel,
+      MatchModel,
     ]),
   ],
   providers: [UserService],

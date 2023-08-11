@@ -12,6 +12,7 @@ import {
   FileTypeValidator,
   Get,
   HttpStatus,
+  Param,
   ParseFilePipe,
   ParseFilePipeBuilder,
   Post,
@@ -96,6 +97,28 @@ export class UserController extends BaseAppController {
       body.longitude,
       body.latitude,
     );
+    return this.getHttpResponse().setDataWithKey('data', result).send(req, res);
+  }
+  @ApiOperation({ summary: ' users matches' })
+  @ApiResponse({ status: 200, description: 'Ok.' })
+  @ApiResponse({ status: 500, description: 'Internal Server Error.' })
+  @Get('matches')
+  async getUserMatches(@nestjsRequest() req: any, @Res() res: Response) {
+    const userId = req.user.userId;
+    const result = await this.userService.getMatches(userId);
+    return this.getHttpResponse().setDataWithKey('data', result).send(req, res);
+  }
+  @ApiOperation({ summary: ' like users ' })
+  @ApiResponse({ status: 200, description: 'Ok.' })
+  @ApiResponse({ status: 500, description: 'Internal Server Error.' })
+  @Get('like/:id')
+  async likeUser(
+    @Param() id: number,
+    @nestjsRequest() req: any,
+    @Res() res: Response,
+  ) {
+    const userId = req.user.userId;
+    const result = await this.userService.likeUser(userId, id);
     return this.getHttpResponse().setDataWithKey('data', result).send(req, res);
   }
   @ApiOperation({ summary: 'get matches current location ' })

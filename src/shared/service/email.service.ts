@@ -19,24 +19,35 @@ export class EmailService {
 
   constructor(private readonly appLogger: AppLogger) {
     this.transporter = nodemailer.createTransport({
-      host: process.env.SMTP_HOST,
-      port: Number(process.env.SMTP_PORT),
+      host: 'smtp.resend.com',
+      port: 465,
       auth: {
-        user: process.env.SMTP_USER,
-        pass: process.env.SMTP_PASSWORD,
+        user: '',
+        pass: '',
       },
-      secure: false, // true for 465, false for other ports
+      // true for 465, false for other ports
       tls: {
         rejectUnauthorized: false, // do not fail on invalid certs
       },
     });
+    // this.transporter = nodemailer.createTransport(
+    //   mailgunTransport(mailgunOptions),
+    // );
   }
 
   public async sendEmail(mailOptions: MySendMailOptions): Promise<void> {
     try {
       console.log(mailOptions);
+      // const message = {
+      //   from: 'Spade <no-reply@hookychat.com>',
+      //   to: mailOptions.to,
+      //   subject: mailOptions.subject,
+      //   html: mailOptions.html,
+      // };
+      // const f = await this.transporter.sendMail(message);
+      // console.log(f);
       const result = await resend.emails.send({
-        from: mailOptions.from || 'Spade <onboarding@resend.dev>',
+        from: 'Spade <no-reply@hookychat.com>',
         to: mailOptions.to,
         subject: mailOptions.subject,
         html: mailOptions.html,

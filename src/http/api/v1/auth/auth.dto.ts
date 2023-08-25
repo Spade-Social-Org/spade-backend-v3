@@ -17,6 +17,15 @@ export class VerifyOtpDto {
   @IsString()
   otp: string;
 }
+export class sendOtpDto {
+  @ApiProperty()
+  @IsNotEmpty()
+  userId: number;
+
+  @ApiProperty()
+  @IsNotEmpty()
+  useEmail: boolean;
+}
 export class SignUpDto {
   @ApiProperty()
   @IsNotEmpty()
@@ -34,6 +43,7 @@ export class SignUpDto {
   name: string;
 
   @ApiProperty()
+  @IsNotEmpty()
   @IsString()
   phone_number: string;
 

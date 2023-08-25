@@ -65,6 +65,7 @@ export class PostController extends BaseAppController {
     @Res() res: Response,
   ) {
     const userId = req.user.userId;
+    console.log(body, files, userId);
     const result = await this.postService.create(body, files, userId);
     return this.getHttpResponse().setDataWithKey('data', result).send(req, res);
   }

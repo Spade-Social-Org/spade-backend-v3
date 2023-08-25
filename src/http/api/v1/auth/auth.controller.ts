@@ -18,7 +18,7 @@ import {
 import { Request, Response } from 'express';
 
 import { AuthService } from './auth.service';
-import { LoginDto, SignUpDto, VerifyOtpDto } from './auth.dto';
+import { LoginDto, SignUpDto, VerifyOtpDto, sendOtpDto } from './auth.dto';
 import { AuthGuard } from './auth.guard';
 import { Public } from '~/shared/publicDecorator';
 
@@ -55,6 +55,21 @@ export class AuthController extends BaseAppController {
   ) {
     const result = await this.authService.verifyOtp(body.otp);
     return this.getHttpResponse().setDataWithKey('data', result).send(req, res);
+  }
+  @ApiOperation({ summary: 'send otp' })
+  @ApiResponse({ status: 200, description: 'Ok.' })
+  @ApiResponse({ status: 500, description: 'Internal Server Error.' })
+  @Public()
+  @Post('otp/send')
+  async sendOtp(
+    @Body() body: sendOtpDto,
+    @Req() req: Request,
+    @Res() res: Response,
+  ) {
+    const result = await this.authService.sendOtp(body);
+    return this.getHttpResponse()
+      .setDataWithKey('message', result)
+      .send(req, res);
   }
 
   @ApiOperation({ summary: 'login' })

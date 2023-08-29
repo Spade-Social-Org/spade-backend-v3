@@ -40,7 +40,7 @@ export class PostService {
     createPayload: createPostDto,
     _files: Array<Express.Multer.File>,
     userID: number,
-  ): Promise<void> {
+  ): Promise<PostModel> {
     try {
       //find the user
       const { files, ...payload } = createPayload;
@@ -61,6 +61,7 @@ export class PostService {
       //add it to  feed of all  the users matchers
       //TODO: MOVE THIS TO A QUEUE  TO BE PROCESSED BY A SEPERATE THREAD/PROCESS
       await this.createFeed(post.id, userID);
+      return post;
     } catch (error) {
       this.appLogger.logError(error);
       if (error instanceof BaseAppException) {

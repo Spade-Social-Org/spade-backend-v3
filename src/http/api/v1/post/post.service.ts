@@ -61,7 +61,39 @@ export class PostService {
       //add it to  feed of all  the users matchers
       //TODO: MOVE THIS TO A QUEUE  TO BE PROCESSED BY A SEPERATE THREAD/PROCESS
       await this.createFeed(post.id, userID);
-      return post;
+      return (await this.findOne(post.id)) as PostModel;
+    } catch (error) {
+      this.appLogger.logError(error);
+      if (error instanceof BaseAppException) {
+        throw error;
+      }
+      throw new ServerAppException(ResponseMessage.SERVER_ERROR);
+    }
+  }
+  async findOne(id: number): Promise<PostModel | null> {
+    try {
+      //find the user
+      const query = `select 
+    files.file_path as  gallery,
+    post.description ,
+   post.id,
+   post.created_at,
+   post.is_story
+    
+  from 
+     posts post 
+    left join files files on files.post_id = post.id  and files."entityType" = 'post' 
+     
+    
+  where 
+    post.id = $1
+   `;
+      return await dataSource.manager.query(query, [id]);
+      // return await this.postRepository.findOne({
+      //   relations: ['files'],
+      //   select: ['id', 'description', 'is_story', 'files.file_path'],
+      //   where: { id: id },
+      // });
     } catch (error) {
       this.appLogger.logError(error);
       if (error instanceof BaseAppException) {

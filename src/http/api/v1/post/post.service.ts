@@ -148,6 +148,8 @@ export class PostService {
     let query = `select 
     files.file_path as  gallery,
     post.description ,
+    post.id,
+    post.created_at,
     poster."name" as poster_name ,
     posterFiles.file_url as poster_image
     

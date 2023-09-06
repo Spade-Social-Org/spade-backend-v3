@@ -11,6 +11,7 @@ import { Response } from 'express';
 import appConfig from './config/envs/app.config';
 import { SecuritySchemeObject } from '@nestjs/swagger/dist/interfaces/open-api-spec.interface';
 import { SocketIOAdapter } from './http/api/v1/gateway/websocketAdapter';
+import heapdump from 'heapdump';
 
 async function bootstrap() {
   //Get app instance
@@ -98,6 +99,11 @@ async function bootstrap() {
   } else {
     console.log('Could not start application');
   }
+  process.on('unhandledRejection', (reason, promise) => {
+    console.error('Unhandled Rejection at:', promise, 'reason:', reason);
+    heapdump.writeSnapshot('out-of-memory.heapsnapshot');
+    process.exit(1);
+  });
 }
 
 bootstrap();

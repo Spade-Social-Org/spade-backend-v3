@@ -6,12 +6,7 @@ import { TranslatorModule } from 'nestjs-translator';
 import { APP_FILTER, APP_GUARD, APP_PIPE } from '@nestjs/core';
 import { HttpExceptionFilter } from './http/exceptions/exception-filter/HttpExceptionFilter';
 
-import { BullModule } from '@nestjs/bullmq';
-
 import dataSourceInstance from './database/connections/default';
-
-import { ThrottlerModule } from '@nestjs/throttler';
-import { ThrottlerBehindProxyGuard } from './config/throttle';
 
 import validatorPipe from './config/validator';
 import appConfig from './config/envs/app.config';
@@ -46,27 +41,7 @@ import { MessageModule } from './http/api/v1/message/message.module';
         return dataSourceInstance;
       },
     }),
-    ThrottlerModule.forRootAsync({
-      imports: [ConfigModule],
-      inject: [ConfigService],
-      useFactory: (config: ConfigService) => ({
-        ttl: config.get('app.THROTTLE_TTL'),
-        limit: config.get('app.THROTTLE_LIMIT'),
-      }),
-    }),
-    // BullModule.forRootAsync({
-    //   imports: [ConfigModule],
-    //   inject: [ConfigService],
-    //   useFactory: async (configService: ConfigService) => ({
-    //     connection: {
-    //       host: configService.get('REDIS_HOST'),
-    //       port: +configService.get('REDIS_PORT'),
-    //     },
-    //   }),
-    // }),
-    // BullModule.registerQueue({
-    //   name: 'sync',
-    // }),
+
     TranslatorModule.forRoot({
       global: true,
       defaultLang: 'en',
@@ -85,10 +60,7 @@ import { MessageModule } from './http/api/v1/message/message.module';
       provide: APP_FILTER,
       useClass: HttpExceptionFilter,
     },
-    {
-      provide: APP_GUARD,
-      useClass: ThrottlerBehindProxyGuard,
-    },
+
     {
       provide: APP_PIPE,
       useValue: validatorPipe,

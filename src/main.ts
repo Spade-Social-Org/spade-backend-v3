@@ -3,7 +3,6 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 
-import * as Sentry from '@sentry/node';
 import { isConnected } from './database/connections/default';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { useContainer } from 'class-validator';
@@ -11,7 +10,6 @@ import { Response } from 'express';
 import appConfig from './config/envs/app.config';
 import { SecuritySchemeObject } from '@nestjs/swagger/dist/interfaces/open-api-spec.interface';
 import { SocketIOAdapter } from './http/api/v1/gateway/websocketAdapter';
-import heapdump from 'heapdump';
 
 async function bootstrap() {
   //Get app instance
@@ -84,14 +82,6 @@ async function bootstrap() {
     });
   });
 
-  const envsToReportOn = ['staging', 'production'];
-  if (envsToReportOn.includes(appConfigEnv.NODE_ENV)) {
-    Sentry.init({
-      dsn: appConfigEnv.SENTRY_DSN,
-      environment: appConfigEnv.SENTRY_ENV,
-    });
-  }
-
   const server = await app.listen(appConfigEnv.PORT, '0.0.0.0');
   if (server && server.listening) {
     console.log('App listened succesfully');
@@ -99,11 +89,6 @@ async function bootstrap() {
   } else {
     console.log('Could not start application');
   }
-  process.on('unhandledRejection', (reason, promise) => {
-    console.error('Unhandled Rejection at:', promise, 'reason:', reason);
-    heapdump.writeSnapshot('out-of-memory.heapsnapshot');
-    process.exit(1);
-  });
 }
 
 bootstrap();

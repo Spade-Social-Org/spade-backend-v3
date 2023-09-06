@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService, ConfigType } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { LoggerModule } from 'nestjs-pino';
+
 import { TranslatorModule } from 'nestjs-translator';
 import { APP_FILTER, APP_GUARD, APP_PIPE } from '@nestjs/core';
 import { HttpExceptionFilter } from './http/exceptions/exception-filter/HttpExceptionFilter';
@@ -34,32 +34,7 @@ import { MessageModule } from './http/api/v1/message/message.module';
       load: [appConfig, databaseConfig, redisConfig],
       cache: true,
     }),
-    LoggerModule.forRootAsync({
-      inject: [appConfig.KEY],
-      async useFactory(applicationConfig: ConfigType<typeof appConfig>) {
-        const nodeEnv = applicationConfig.NODE_ENV;
 
-        return {
-          pinoHttp: {
-            serializers: {
-              req(req) {
-                req.body = req.body || req.raw.body;
-                return req;
-              },
-            },
-            transport: {
-              target: 'pino-pretty',
-              options:
-                nodeEnv === 'production'
-                  ? undefined
-                  : {
-                      colorize: true,
-                    },
-            },
-          },
-        };
-      },
-    }),
     TypeOrmModule.forRootAsync({
       name: 'default',
       useFactory: () => ({}),

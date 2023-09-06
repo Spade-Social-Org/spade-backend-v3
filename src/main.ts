@@ -2,7 +2,7 @@ import 'module-alias/register';
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
-import { Logger, LoggerErrorInterceptor } from 'nestjs-pino';
+
 import * as Sentry from '@sentry/node';
 import { isConnected } from './database/connections/default';
 import { NestExpressApplication } from '@nestjs/platform-express';
@@ -21,9 +21,7 @@ async function bootstrap() {
   });
 
   //Register loggers
-  const logger = app.get(Logger);
-  app.useGlobalInterceptors(new LoggerErrorInterceptor());
-  app.useLogger(logger);
+
   app.flushLogs();
   const adapter = new SocketIOAdapter(app);
   app.useWebSocketAdapter(adapter);
@@ -32,9 +30,9 @@ async function bootstrap() {
   const appConfigEnv = appConfig();
 
   //Ensure database is connected before starting the app
-  logger.log('Connecting to database ...');
+  console.log('Connecting to database ...');
   await isConnected();
-  logger.log('Connected to database');
+  console.log('Connected to database');
 
   //Ensable cors
   app.enableCors({

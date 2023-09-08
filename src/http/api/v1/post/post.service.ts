@@ -172,7 +172,7 @@ export class PostService {
     }
     query = query.concat(`and 
     post.is_story = ${story}
-    order by feed.created_at `);
+    order by feed.created_at desc`);
     try {
       const feeds = await dataSource.manager.query(query, [userId]);
 

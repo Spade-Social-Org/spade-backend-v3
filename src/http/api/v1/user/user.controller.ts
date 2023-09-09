@@ -96,6 +96,7 @@ export class UserController extends BaseAppController {
       userId,
       body.longitude,
       body.latitude,
+      body.type,
     );
     return this.getHttpResponse().setDataWithKey('data', result).send(req, res);
   }
@@ -106,6 +107,18 @@ export class UserController extends BaseAppController {
   async getUserMatches(@nestjsRequest() req: any, @Res() res: Response) {
     const userId = req.user.userId;
     const result = await this.userService.getMatches(userId);
+    return this.getHttpResponse().setDataWithKey('data', result).send(req, res);
+  }
+  @ApiOperation({ summary: ' user profile' })
+  @ApiResponse({ status: 200, description: 'Ok.' })
+  @ApiResponse({ status: 500, description: 'Internal Server Error.' })
+  @Get('profile/:id')
+  async getUserProfile(
+    @Param('id') id: number,
+    @nestjsRequest() req: any,
+    @Res() res: Response,
+  ) {
+    const result = await this.userService.getUserProfile(id);
     return this.getHttpResponse().setDataWithKey('data', result).send(req, res);
   }
   @ApiOperation({ summary: ' like users ' })

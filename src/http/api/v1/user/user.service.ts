@@ -20,7 +20,11 @@ import { GenerateOTP, fileUpload } from '~/utils/general';
 import { assign } from 'lodash';
 import { ProfileModel } from '~/database/models/ProfileModel';
 import { FileModel } from '~/database/models/FileModel';
-import { FileEntityType, FileType } from '~/constant/ModelEnums';
+import {
+  FileEntityType,
+  FileType,
+  RelationshipTypeEnum,
+} from '~/constant/ModelEnums';
 import dataSource from '~/database/connections/default';
 import { LikeCacheModel } from '~/database/models/LikeCacheModel';
 import { MatchModel } from '~/database/models/MatchModel';
@@ -185,57 +189,76 @@ export class UserService {
     userId: number,
     longitude: number,
     latitude: number,
+    type: RelationshipTypeEnum,
   ): Promise<any> {
     try {
-      const user = await this.updateUserProfile(
-        { latitude, longitude } as UpdateUserProfileDto,
-        userId,
-      );
-      const minAge = user.profile.min_age;
-      const maxAge = user.profile.max_age;
-      // const genderPreference = user.profile.gender_preference.join(', ');
-      const query = `SELECT 
-      *, 
-      EXTRACT(
-        YEAR 
-        FROM 
-          AGE(CURRENT_DATE, profile.dob)
-      ) as age, 
-      (
-        6371 * acos(
-          cos(
-            radians($2)
-          ) * cos(
-            radians(profile.latitude)
-          ) * cos(
-            radians(profile.longitude) - radians($3)
-          ) + sin(
-            radians($2)
-          ) * sin(
-            radians($3)
-          )
-        )
-      ) AS distance 
-    FROM 
-      profiles profile 
-      inner join users users on users.profile_id = profile.id 
-    where 
-      EXTRACT(
-        YEAR 
-        FROM 
-          AGE(CURRENT_DATE, profile.dob)
-      ) BETWEEN ${minAge} 
-      AND ${maxAge} 
-     
-      and users.id not in ($1) 
-    ORDER BY 
-      distance;
-    `;
-      const profiles = await dataSource.manager.query(query, [
-        userId,
-        latitude,
-        longitude,
+      const [user, _] = await Promise.all([
+        this.getUserProfile(userId),
+        this.updateUserProfile(
+          { latitude, longitude } as UpdateUserProfileDto,
+          userId,
+        ),
       ]);
+      const params: any[] = [userId, latitude, longitude];
+      console.log(user);
+      const minAge = user.min_age || 18;
+      const maxAge = user.max_age || 40;
+      // const genderPreference = user.profile.gender_preference.join(', ');
+      let query = `
+      SELECT 
+      userFiles.file_path as  gallery, 
+      users.id as userId,
+      users."name",
+      profile."relationship_type",
+      a.country,
+     EXTRACT(
+       YEAR 
+       FROM 
+         AGE(CURRENT_DATE, profile.dob)
+     ) as age, 
+     (
+       6371 * acos(
+         cos(
+            radians($2)
+         ) * cos(
+           radians(profile.latitude)
+         ) * cos(
+           radians(profile.longitude) -  radians($3)
+         ) + sin(
+           radians($2)
+         ) * sin(
+            radians($3)
+         )
+       )
+     ) AS distance 
+   FROM 
+     profiles profile 
+     inner join users users on users.profile_id = profile.id 
+      left join files userFiles on userFiles.user_id  = users.id  and userFiles."entityType" = 'user'
+      left join addresses a on a.user_id = users.id
+   where 
+     EXTRACT(
+       YEAR 
+       FROM 
+         AGE(CURRENT_DATE, profile.dob)
+     ) BETWEEN ${minAge}  
+     AND ${maxAge} 
+    
+     and users.id not in ($1) 
+   `;
+      console.log({ type });
+      if (type) {
+        console.log({ type });
+        params.push(type);
+
+        query = query.concat(`
+      and 
+      profile."relationship_type" = $4`);
+      }
+      query = query.concat(`
+    ORDER BY 
+    distance`);
+      const profiles = await dataSource.manager.query(query, params);
 
       return profiles;
     } catch (error) {
@@ -334,6 +357,34 @@ export class UserService {
       throw new ServerAppException(ResponseMessage.SERVER_ERROR);
     }
   }
+  async getUserProfile(userId: number) {
+    try {
+      const query = `
+      SELECT 
+      userFiles.file_path as  gallery, 
+      users."name",
+      profile.*,
+      a.country
+   FROM 
+     profiles profile 
+     inner join users users on users.profile_id = profile.id 
+      left join files userFiles on userFiles.user_id  = users.id  and userFiles."entityType" = 'user'
+      left join addresses a on a.user_id = users.id
+   where  users.id=$1;
+      `;
+
+      const users = await dataSource.manager.query(query, [userId]);
+
+      return users[0];
+    } catch (error) {
+      console.error(error);
+      this.appLogger.logError(error);
+      if (error instanceof BaseAppException) {
+        throw error;
+      }
+      throw new ServerAppException(ResponseMessage.SERVER_ERROR);
+    }
+  }
   async likeUser(
     likerId: number,
     likeeId: number,
@@ -378,4 +429,43 @@ export class UserService {
 // SELECT *,
 //        (6371 * acos(cos(radians(:provided_latitude)) * cos(radians(latitude)) * cos(radians(longitude) - radians(:provided_longitude)) + sin(radians(:provided_latitude)) * sin(radians(latitude)))) AS distance
 // FROM users
-// ORDER BY distance;
+// // ORDER BY distance;
+// SELECT
+//        userFiles.file_path as  gallery,
+//        users."name",
+//        profile."relationship_type",
+//       EXTRACT(
+//         YEAR
+//         FROM
+//           AGE(CURRENT_DATE, profile.dob)
+//       ) as age,
+//       (
+//         6371 * acos(
+//           cos(
+//             radians(46.5)
+//           ) * cos(
+//             radians(profile.latitude)
+//           ) * cos(
+//             radians(profile.longitude) - radians(24.5)
+//           ) + sin(
+//             radians(46.5)
+//           ) * sin(
+//             radians(24.5)
+//           )
+//         )
+//       ) AS distance
+//     FROM
+//       profiles profile
+//       inner join users users on users.profile_id = profile.id
+//        left join files userFiles on userFiles.user_id  = users.id  and userFiles."entityType" = 'user'
+//     where
+//       EXTRACT(
+//         YEAR
+//         FROM
+//           AGE(CURRENT_DATE, profile.dob)
+//       ) BETWEEN 18
+//       AND 30
+
+//       and users.id not in (5)
+//     ORDER BY
+//       distance

@@ -8,9 +8,10 @@ export enum FileType {
 }
 
 export enum RelationshipTypeEnum {
-  SINGLE = 'single',
-  GROUP = 'group',
-  SEX = 'sex',
+  SINGLE = 'single_searching',
+  FRIENDS = 'friends',
+  LONG_TERM = 'long_term',
+  RED_LIGHT = ' red_light_district',
 }
 export enum GenderPreferenceEnum {
   MALE = 'male',

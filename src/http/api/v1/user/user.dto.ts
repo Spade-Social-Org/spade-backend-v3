@@ -5,6 +5,7 @@ import {
   IsDateString,
   IsArray,
   IsNumber,
+  IsOptional,
 } from 'class-validator';
 import {
   BodyTypeEnum,
@@ -101,6 +102,11 @@ export class DiscoverDto {
   @ApiProperty()
   @IsNumber()
   latitude: number;
+
+  @ApiProperty({ enum: RelationshipTypeEnum })
+  @IsString()
+  @IsOptional()
+  type: RelationshipTypeEnum;
 }
 export class addAddressDto {
   country: string;

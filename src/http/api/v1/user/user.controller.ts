@@ -126,7 +126,7 @@ export class UserController extends BaseAppController {
   @ApiResponse({ status: 500, description: 'Internal Server Error.' })
   @Get('like/:id')
   async likeUser(
-    @Param() id: number,
+    @Param('id') id: number,
     @nestjsRequest() req: any,
     @Res() res: Response,
   ) {

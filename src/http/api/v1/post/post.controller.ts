@@ -78,10 +78,19 @@ export class PostController extends BaseAppController {
     @nestjsRequest() req: any,
     @Res() res: Response,
     @Query('is_story') is_story: boolean,
+    @Query() queryOptions: { page: number; pageSize: number },
   ) {
     const userId = req.user.userId;
 
-    const result = await this.postService.getUserFeeds(userId, is_story);
-    return this.getHttpResponse().setDataWithKey('data', result).send(req, res);
+    const result = await this.postService.getUserFeeds(
+      userId,
+      is_story,
+      queryOptions.page,
+      queryOptions.pageSize,
+    );
+    return this.getHttpResponse().sendResponseBody(res, {
+      data: result.feeds,
+      meta: result.meta,
+    });
   }
 }

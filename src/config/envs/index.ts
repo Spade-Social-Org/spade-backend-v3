@@ -23,6 +23,7 @@ export type ProcessEnv = {
   DB_PASSWORD: string;
   DB_NAME: string;
   DB_CONN_POOL_COUNT: number;
+  APP_URL: string;
 
   SMTP_HOST: string;
   SMTP_PASSWORD: string;

@@ -10,7 +10,7 @@ import { NotFoundAppException } from '~/http/exceptions/NotFoundAppException';
 import { ServerAppException } from '~/http/exceptions/ServerAppException';
 import { AppLogger } from '~/shared/AppLogger';
 
-import { fileUpload } from '~/utils/general';
+import { fileUpload, generatePaginationMeta } from '~/utils/general';
 
 import { FileModel } from '~/database/models/FileModel';
 import { FileEntityType, FileType } from '~/constant/ModelEnums';
@@ -20,6 +20,7 @@ import { MatchModel } from '~/database/models/MatchModel';
 import { FeedModel } from '~/database/models/feedModel';
 import dataSource from '~/database/connections/default';
 import { createPostDto } from './post.dto';
+import { PaginationData } from '~/constant/interface';
 
 @Injectable()
 export class PostService {
@@ -142,8 +143,16 @@ export class PostService {
       throw new ServerAppException(ResponseMessage.SERVER_ERROR);
     }
   }
-  async getUserFeeds(userId: number, isStory = false): Promise<FeedModel[]> {
+  async getUserFeeds(
+    userId: number,
+    isStory = false,
+    page?: number,
+    pageSize?: number,
+  ): Promise<{ feeds: FeedModel[]; meta: PaginationData }> {
     //TODO: PAGINATION
+    const _page = page && Number(page) > 0 ? Number(page) : 1;
+    const take = pageSize && Number(pageSize) > 0 ? Number(pageSize) : 15;
+    const skip = (_page - 1) * take;
     let story = false;
     let query = `select 
     files.file_path as  gallery,
@@ -163,20 +172,46 @@ export class PostService {
   where 
     feed.user_id = $1
    `;
+    let totalQuery = `select 
+
+    count(*) as total
+   
+ from 
+   feeds feed 
+ 
+   inner join posts post on post.id = feed.post_id
+
+   
+ where 
+   feed.user_id = $1
+  `;
     if (isStory) {
       console.log(isStory);
       story = true;
       query = query.concat(`
       and 
       post.created_at > CURRENT_TIMESTAMP - INTERVAL '24 hours'`);
+      totalQuery = totalQuery.concat(`
+      and 
+      post.created_at > CURRENT_TIMESTAMP - INTERVAL '24 hours'`);
     }
     query = query.concat(`and 
     post.is_story = ${story}
-    order by feed.created_at desc`);
+    order by feed.created_at desc
+    limit  $2
+    offset  $3
+   `);
+    totalQuery = totalQuery.concat(`and 
+    post.is_story = ${story}
+    `);
     try {
-      const feeds = await dataSource.manager.query(query, [userId]);
+      const [feeds, count] = await Promise.all([
+        dataSource.manager.query(query, [userId, take, skip]),
+        dataSource.manager.query(totalQuery, [userId]),
+      ]);
+      const total = Number(count[0].total);
 
-      return feeds;
+      return { feeds, meta: generatePaginationMeta(take, _page, total) };
     } catch (error) {
       this.appLogger.logError(error);
       if (error instanceof BaseAppException) {

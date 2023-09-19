@@ -9,6 +9,7 @@ import { Multer } from 'multer';
 import slugify from 'slugify';
 import processEnvObj from '~/config/envs';
 import streamifier from 'streamifier';
+import { PaginationData } from '~/constant/interface';
 
 cloudinary.config({
   cloud_name: processEnvObj.CLOUDINARY_CLOUD_NAME,
@@ -80,4 +81,35 @@ export const fileUpload = async (
     console.log(error);
     throw new ServerAppException(ResponseMessage.SERVER_ERROR);
   }
+};
+export const calculateTotalPages = (total: number, limit: number): number => {
+  const numberToRound = total / limit;
+  const remainder = total % limit;
+  let totalPages = Math.round(numberToRound);
+  if (remainder) {
+    totalPages = totalPages + 1;
+  }
+  return totalPages;
+};
+export const generatePaginationMeta = (
+  take: number,
+  page: number,
+  total: number,
+): PaginationData => {
+  const totalPages = calculateTotalPages(total, take);
+  const nextPage = page >= totalPages ? totalPages : page + 1;
+  const previousPage = page == 1 ? page : page - 1;
+  const meta: PaginationData = {
+    total,
+
+    perPage: take,
+
+    currentPage: page,
+    totalPages,
+    first: `${processEnvObj.APP_URL}/api/v1/products/pageSize=${take}&page=${page}`,
+    last: `${processEnvObj.APP_URL}/api/v1/products/pageSize=${take}&page=${totalPages}`,
+    prev: `${processEnvObj.APP_URL}/api/v1/products/pageSize=${take}&page=${previousPage}`,
+    next: `${processEnvObj.APP_URL}/api/v1/products/pageSize=${take}&page=${nextPage}`,
+  };
+  return meta;
 };

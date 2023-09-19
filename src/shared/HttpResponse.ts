@@ -61,8 +61,10 @@ export class HttpResponse {
     return res.status(this.serverCode).send(this.buildResponseBody(req));
   }
 
-  sendResponseBody(res: Response, body: unknown) {
-    return res.status(this.serverCode).send(body);
+  sendResponseBody(res: Response, body: any) {
+    return res
+      .status(this.serverCode)
+      .send({ statusCode: this.statusCode, message: this.message, ...body });
   }
 
   getBody(req: Request) {

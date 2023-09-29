@@ -211,7 +211,10 @@ export class PostService {
       ]);
       const total = Number(count[0].total);
 
-      return { feeds, meta: generatePaginationMeta(take, _page, total) };
+      return {
+        feeds,
+        meta: generatePaginationMeta(take, _page, total, 'post/user/feeds'),
+      };
     } catch (error) {
       this.appLogger.logError(error);
       if (error instanceof BaseAppException) {

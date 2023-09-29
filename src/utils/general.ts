@@ -95,6 +95,7 @@ export const generatePaginationMeta = (
   take: number,
   page: number,
   total: number,
+  path: string,
 ): PaginationData => {
   const totalPages = calculateTotalPages(total, take);
   const nextPage = page >= totalPages ? totalPages : page + 1;
@@ -106,10 +107,10 @@ export const generatePaginationMeta = (
 
     currentPage: page,
     totalPages,
-    first: `${processEnvObj.APP_URL}/api/v1/products/pageSize=${take}&page=${page}`,
-    last: `${processEnvObj.APP_URL}/api/v1/products/pageSize=${take}&page=${totalPages}`,
-    prev: `${processEnvObj.APP_URL}/api/v1/products/pageSize=${take}&page=${previousPage}`,
-    next: `${processEnvObj.APP_URL}/api/v1/products/pageSize=${take}&page=${nextPage}`,
+    first: `${processEnvObj.APP_URL}/api/v1/${path}?pageSize=${take}&page=${page}`,
+    last: `${processEnvObj.APP_URL}/api/v1/${path}?pageSize=${take}&page=${totalPages}`,
+    prev: `${processEnvObj.APP_URL}/api/v1/${path}?pageSize=${take}&page=${previousPage}`,
+    next: `${processEnvObj.APP_URL}/api/v1/${path}?pageSize=${take}&page=${nextPage}`,
   };
   return meta;
 };

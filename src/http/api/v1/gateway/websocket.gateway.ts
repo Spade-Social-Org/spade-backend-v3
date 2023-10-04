@@ -51,14 +51,17 @@ export class WebSocketGatewayServer
     client: AuthenticatedSocket,
     { content, receiver_id }: any,
   ) {
+    console.log({ content, receiver_id });
     const message = await this.messageService.create({
       content,
       sender_id: client.user.userId,
       receiver_id,
     });
-    this.server
-      .to(`client-${receiver_id}`)
-      .emit('message.private', { content, sender_id: client.user.userId });
+    this.server.to(`client-${receiver_id}`).emit('message.private', {
+      content,
+      sender_id: client.user.userId,
+      name: client.user.name,
+    });
   }
   @SubscribeMessage('message.location')
   async handleShareLocation(

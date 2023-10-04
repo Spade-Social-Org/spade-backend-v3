@@ -185,4 +185,40 @@ export class MessageService {
       throw new ServerAppException(ResponseMessage.SERVER_ERROR);
     }
   }
+  async getConversations(userId: number) {
+    try {
+      const query = `
+      SELECT
+  
+      (select m."content" from messages m where m."conversation_id"=c.id order by  m.created_at desc limit 1) as "latest_message",
+      u."name",
+      u.id AS user_id,
+      userFiles.file_url AS image,
+      userFiles.file_path AS gallery
+  FROM
+      conversations c
+  
+      INNER JOIN users AS u ON
+      CASE
+          WHEN c.creator_id = $1 THEN c.recipient_id = u.id
+          ELSE c.creator_id = u.id
+      END
+  LEFT JOIN
+      files userFiles ON userFiles.user_id = u.id AND userFiles."entityType" = 'user'
+  WHERE
+      c.creator_id = $1 OR c.recipient_id = $1
+     
+  ORDER BY
+      c.created_at DESC;
+        `;
+      return await dataSource.manager.query(query, [userId]);
+    } catch (error) {
+      console.error(error);
+      this.appLogger.logError(error);
+      if (error instanceof BaseAppException) {
+        throw error;
+      }
+      throw new ServerAppException(ResponseMessage.SERVER_ERROR);
+    }
+  }
 }

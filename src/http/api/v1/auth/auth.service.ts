@@ -26,7 +26,7 @@ export class AuthService {
     try {
       const user = await this.userService.findOneByEmail(payload.email);
       if (user) {
-        throw new BadRequestAppException(ResponseMessage.USER_REGISTERED);
+        throw new BadRequestAppException(ResponseMessage.EMAIL_ALREADY_EXISTS);
       }
 
       payload.password = await hasher(payload.password);

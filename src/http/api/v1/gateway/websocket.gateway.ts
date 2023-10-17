@@ -52,6 +52,7 @@ export class WebSocketGatewayServer
     { content, receiver_id }: any,
   ) {
     console.log({ content, receiver_id });
+    if (!client.user) return;
     const message = await this.messageService.create({
       content,
       sender_id: client.user.userId,

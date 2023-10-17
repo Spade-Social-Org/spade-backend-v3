@@ -1,4 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { Transform } from 'class-transformer';
 import {
   IsString,
   IsInt,
@@ -117,4 +118,16 @@ export class addAddressDto {
 
   postal_code: string;
   user: UserModel;
+}
+export class addImageDto {
+  @ApiProperty()
+  // @Transform(({ value }) => value.toString())
+  @IsOptional()
+  fileArray: any;
+  @ApiProperty({ type: 'string', format: 'binary', required: false })
+  files: Array<Express.Multer.File>;
+  @ApiProperty()
+  @IsString()
+  @IsOptional()
+  fileUrl: string;
 }

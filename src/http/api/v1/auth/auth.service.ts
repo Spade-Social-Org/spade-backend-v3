@@ -76,7 +76,7 @@ export class AuthService {
     try {
       const user = await this.userService.findOneByOtp(otp);
       if (!user) {
-        throw new BadRequestAppException(ResponseMessage.NOT_FOUND);
+        throw new BadRequestAppException(ResponseMessage.OTP_NOT_FOUND);
       }
 
       await this.userService.updateUser({ otp_verified: true }, user.id);

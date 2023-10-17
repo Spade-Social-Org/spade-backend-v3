@@ -27,7 +27,7 @@ import {
 import { UserService } from './user.service';
 import { Response, Request, Express, query } from 'express';
 import { Multer } from 'multer';
-import { DiscoverDto, UpdateUserProfileDto } from './user.dto';
+import { DiscoverDto, UpdateUserProfileDto, addImageDto } from './user.dto';
 
 import { FileInterceptor, FilesInterceptor } from '@nestjs/platform-express';
 import { BadRequestAppException } from '~/http/exceptions/BadRequestAppException';
@@ -62,7 +62,7 @@ export class UserController extends BaseAppController {
   @UseInterceptors(FilesInterceptor('files'))
   @Post('image')
   async addImages(
-    @Body() body: any,
+    @Body() body: addImageDto,
     @UploadedFiles(
       new ParseFilePipeBuilder()
         .addFileTypeValidator({
@@ -79,7 +79,8 @@ export class UserController extends BaseAppController {
     @Res() res: Response,
   ) {
     const userId = req.user.userId;
-    const result = await this.userService.addImages(files, userId);
+    const result = await this.userService.addImages(userId, files, body);
+
     return this.getHttpResponse().setDataWithKey('data', result).send(req, res);
   }
   @ApiOperation({ summary: 'Discover users' })

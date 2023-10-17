@@ -9,12 +9,13 @@ export class FileModel extends BaseModel {
   @Index()
   @Column({ enum: FileEntityType, nullable: true })
   entityType: FileEntityType;
-
+  @Column({ type: 'int', nullable: true })
+  user_id: number;
   @Column({ type: 'varchar', array: true, nullable: true })
   file_path: string[];
 
   @Column({ type: 'varchar', nullable: true })
-  file_url: string;
+  file_url: string | undefined;
 
   @Column({ enum: FileType, nullable: true })
   file_type: FileType;

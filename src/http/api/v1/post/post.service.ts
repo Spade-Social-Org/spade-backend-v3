@@ -21,6 +21,7 @@ import { FeedModel } from '~/database/models/feedModel';
 import dataSource from '~/database/connections/default';
 import { createPostDto } from './post.dto';
 import { PaginationData } from '~/constant/interface';
+import { PostLikeModel } from '~/database/models/PostLikeModel';
 
 @Injectable()
 export class PostService {
@@ -33,6 +34,9 @@ export class PostService {
     @InjectRepository(FeedModel)
     private feedRepository: Repository<FeedModel>,
 
+    @InjectRepository(PostLikeModel)
+    private postLikeRepository: Repository<PostLikeModel>,
+
     @InjectRepository(FileModel)
     private fileRepository: Repository<FileModel>,
     private userService: UserService,
@@ -44,7 +48,7 @@ export class PostService {
   ): Promise<PostModel> {
     try {
       //find the user
-      const { files, ...payload } = createPayload;
+      const { files, gallery, ...payload } = createPayload;
       const user = await this.userService.findOneById(userID);
       if (!user) {
         throw new NotFoundAppException(ResponseMessage.USER_NOT_FOUND);
@@ -57,7 +61,11 @@ export class PostService {
       //create the post
       const post = await this.postRepository.save(payload);
       //upload the file
-      await this.addImages(_files, post);
+      if (_files.length) {
+        await this.addImages(post, _files);
+      } else if (gallery.length) {
+        await this.addImages(post, [], gallery);
+      }
 
       //add it to  feed of all  the users matchers
       //TODO: MOVE THIS TO A QUEUE  TO BE PROCESSED BY A SEPERATE THREAD/PROCESS
@@ -124,11 +132,20 @@ export class PostService {
   }
   //addImages
   async addImages(
-    files: Array<Express.Multer.File>,
     post: PostModel,
+    files?: Array<Express.Multer.File>,
+    fileArray?: string[],
   ): Promise<void> {
     try {
-      const gallery = await fileUpload(files);
+      let gallery: string[] = [];
+      if (fileArray?.length) {
+        gallery = fileArray;
+      } else if (files?.length) {
+        gallery = await fileUpload(files);
+      } else {
+        return;
+      }
+
       const _file = new FileModel();
       _file.file_path = gallery;
       _file.post = post;
@@ -160,12 +177,17 @@ export class PostService {
     post.id,
     post.created_at,
     poster."name" as poster_name ,
-    posterFiles.file_url as poster_image
+    posterFiles.file_url as poster_image,
+    (
+      select count(*) from post_likes plikes where plikes.post_id = post.id
+    ) as number_of_likes
+   
     
   from 
     feeds feed 
     inner join users poster on poster.id = feed.posted_by 
     inner join posts post on post.id = feed.post_id
+    
     left join files files on files.post_id = post.id  and files."entityType" = 'post' 
     left join files posterFiles on posterFiles.user_id  = feed.posted_by  and posterFiles."entityType" = 'user' 
     
@@ -215,6 +237,21 @@ export class PostService {
         feeds,
         meta: generatePaginationMeta(take, _page, total, 'post/user/feeds'),
       };
+    } catch (error) {
+      this.appLogger.logError(error);
+      if (error instanceof BaseAppException) {
+        throw error;
+      }
+      throw new ServerAppException(ResponseMessage.SERVER_ERROR);
+    }
+  }
+  async likePost(postId: number, userId: number): Promise<void> {
+    try {
+      const like = new PostLikeModel();
+      like.post_id = postId;
+      like.user_id = userId;
+
+      await this.postLikeRepository.save(like);
     } catch (error) {
       this.appLogger.logError(error);
       if (error instanceof BaseAppException) {

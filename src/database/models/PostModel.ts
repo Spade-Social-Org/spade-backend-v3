@@ -10,6 +10,7 @@ import { BaseModel } from './BaseModel';
 import { FileModel } from './FileModel';
 import { UserModel } from './UserModel';
 import { FeedModel } from './feedModel';
+import { PostLikeModel } from './PostLikeModel';
 
 @Entity('posts')
 export class PostModel extends BaseModel {
@@ -23,6 +24,8 @@ export class PostModel extends BaseModel {
 
   @OneToMany(() => FileModel, (fileModel) => fileModel.post)
   files: FileModel[];
+  @OneToMany(() => PostLikeModel, (likes) => likes.post)
+  likes: PostLikeModel[];
 
   @OneToMany(() => FeedModel, (feedModel) => feedModel.post)
   feeds: FeedModel[];

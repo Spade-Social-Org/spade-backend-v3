@@ -15,6 +15,7 @@ import {
   UpdateUserDto,
   UpdateUserProfileDto,
   addAddressDto,
+  addImageDto,
 } from './user.dto';
 import { GenerateOTP, fileUpload } from '~/utils/general';
 import { assign } from 'lodash';
@@ -156,19 +157,43 @@ export class UserService {
   }
   //addImages
   async addImages(
-    files: Array<Express.Multer.File>,
     id: number,
+    files?: Array<Express.Multer.File>,
+    body?: addImageDto,
   ): Promise<void> {
     try {
       const user = await this.findOneById(id);
       if (!user) throw new NotFoundAppException(ResponseMessage.NOT_FOUND);
-      const gallery = await fileUpload(files);
-      const _file = new FileModel();
-      _file.file_path = gallery;
-      _file.user = user;
-      _file.entityType = FileEntityType.USER;
-      _file.file_type = FileType.IMAGE;
-      await this.fileRepository.save(_file);
+      const gallery: string[] = [];
+      if (body?.fileArray?.length) {
+        console.log('[FILEARRAY]', body.fileArray);
+        gallery.push(...body.fileArray);
+      }
+      if (files?.length) {
+        const result = await fileUpload(files);
+        console.log('[FILES]', files);
+        gallery.push(...result);
+      }
+      if (!gallery.length && !body?.fileUrl) return;
+      const userFile = await this.fileRepository.findOne({
+        where: { user_id: user.id, entityType: FileEntityType.USER },
+      });
+      if (userFile) {
+        userFile.file_path = gallery;
+        userFile.file_url = body?.fileUrl || gallery[0];
+        userFile.user = user;
+        userFile.entityType = FileEntityType.USER;
+        userFile.file_type = FileType.IMAGE;
+        await this.fileRepository.save(userFile);
+      } else {
+        const _file = new FileModel();
+        _file.file_path = gallery;
+        _file.file_url = body?.fileUrl || gallery[0];
+        _file.user = user;
+        _file.entityType = FileEntityType.USER;
+        _file.file_type = FileType.IMAGE;
+        await this.fileRepository.save(_file);
+      }
     } catch (error) {
       this.appLogger.logError(error);
       if (error instanceof BaseAppException) {

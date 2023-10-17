@@ -12,8 +12,10 @@ import {
   FileTypeValidator,
   Get,
   HttpStatus,
+  Param,
   ParseFilePipe,
   ParseFilePipeBuilder,
+  Patch,
   Post,
   Query,
   Req,
@@ -67,6 +69,20 @@ export class PostController extends BaseAppController {
     const userId = req.user.userId;
     console.log(body, files, userId);
     const result = await this.postService.create(body, files, userId);
+    return this.getHttpResponse().setDataWithKey('data', result).send(req, res);
+  }
+
+  @ApiOperation({ summary: 'like a post' })
+  @ApiResponse({ status: 200, description: 'Ok.' })
+  @ApiResponse({ status: 500, description: 'Internal Server Error.' })
+  @Patch('like/:id')
+  async likePost(
+    @Param('id') id: number,
+    @nestjsRequest() req: any,
+    @Res() res: Response,
+  ) {
+    const userId = req.user.userId;
+    const result = await this.postService.likePost(id, userId);
     return this.getHttpResponse().setDataWithKey('data', result).send(req, res);
   }
 

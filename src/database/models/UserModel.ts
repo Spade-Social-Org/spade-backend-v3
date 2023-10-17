@@ -18,6 +18,7 @@ import { LikeCacheModel } from './LikeCacheModel';
 import { FeedModel } from './feedModel';
 import { MessageModel } from './MessageModel';
 import { GroupModel } from './GroupsModel';
+import { PostLikeModel } from './PostLikeModel';
 
 @Entity('users')
 export class UserModel extends BaseModel {
@@ -73,6 +74,9 @@ export class UserModel extends BaseModel {
   })
   @JoinColumn({ name: 'profile_id' })
   profile: ProfileModel;
+
+  @OneToMany(() => PostLikeModel, (likes) => likes.user)
+  postLikes: PostLikeModel[];
 
   // @ManyToMany(() => GroupModel, (groupModels) => groupModels.users)
   // @JoinTable({

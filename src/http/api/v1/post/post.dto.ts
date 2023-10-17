@@ -20,6 +20,10 @@ export class createPostDto {
   // @IsBoolean()
   is_story: boolean;
 
+  @ApiProperty({ required: false })
+  @IsOptional()
+  gallery: string[];
+
   @ApiProperty({ type: 'string', format: 'binary', required: false })
   files: Array<Express.Multer.File>;
 

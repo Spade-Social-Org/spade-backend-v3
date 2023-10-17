@@ -45,12 +45,14 @@ export class SocketIOAdapter extends IoAdapter {
         next(new NotAuthorizedAppException(ResponseMessage.USER_UNAUTHORIZED));
         return;
       }
+      console.log({ token });
 
       try {
         const payload = await jwtService.verifyAsync(token, {
           secret: jwtConstants.secret,
         });
         socket.user = payload;
+        console.log('socket user', socket.user);
       } catch {
         next(new NotAuthorizedAppException(ResponseMessage.USER_UNAUTHORIZED));
       }
@@ -65,6 +67,7 @@ export class SocketIOAdapter extends IoAdapter {
   ): string | undefined {
     const [type, token] =
       request.handshake?.headers.authorization?.split(' ') ?? [];
+    console.log(type, token);
 
     if (!type || !token) return undefined;
     return type.toLowerCase() === 'bearer' ? token : undefined;

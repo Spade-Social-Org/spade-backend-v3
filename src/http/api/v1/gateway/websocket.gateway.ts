@@ -90,8 +90,8 @@ export class WebSocketGatewayServer
   }
 
   handleConnection(client: AuthenticatedSocket) {
-    console.log(client.user);
-    client.join(`client-${client.user.userId}`);
-    this.logger.log(`Client connected:`, client.user);
+    console.log(client?.user);
+    client.join(`client-${client?.user?.userId}`);
+    this.logger.log(`Client connected:`, client?.user);
   }
 }

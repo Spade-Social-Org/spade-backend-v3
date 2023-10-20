@@ -200,7 +200,7 @@ export class PostService {
     (
       select count(plikes.id) from post_likes plikes where plikes.post_id = post.id and plikes.unlike is false
     ) as number_of_likes,
-   
+    CASE WHEN COALESCE((SELECT COUNT(pb.id) from post_bookmarks pb where pb.post_id = post.id and pb.user_id =${userId} and pb.bookmark is true LIMIT 1), 0) = 1 THEN 'true' ELSE 'false' END AS bookmarked,
     CASE WHEN COALESCE((SELECT COUNT(plikes.id) from post_likes plikes where plikes.post_id = post.id and plikes.user_id =${userId} and plikes.unlike is false LIMIT 1), 0) = 1 THEN 'true' ELSE 'false' END AS liked_post
   from 
     feeds feed 

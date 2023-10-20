@@ -49,7 +49,12 @@ export class UserService {
   ) {}
   async createUser(payload: CreateUserDto): Promise<UserModel> {
     try {
-      return await this.usersRepository.save(payload);
+      const user = await this.usersRepository.save(payload);
+      await this.updateUserProfile(
+        {} as unknown as UpdateUserProfileDto,
+        user.id,
+      );
+      return user;
     } catch (error) {
       this.appLogger.logError(error);
       if (error instanceof BaseAppException) {
@@ -235,6 +240,8 @@ export class UserService {
       users.id as userId,
       users."name",
       profile."relationship_type",
+      profile.longitude,
+      profile.latitude,
       a.country,
      EXTRACT(
        YEAR 
@@ -252,7 +259,7 @@ export class UserService {
          ) + sin(
            radians($2)
          ) * sin(
-            radians($3)
+            radians(profile.latitude)
          )
        )
      ) AS distance 

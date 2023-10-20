@@ -120,13 +120,13 @@ export class addAddressDto {
   user: UserModel;
 }
 export class addImageDto {
-  @ApiProperty()
   // @Transform(({ value }) => value.toString())
+  @ApiProperty({ type: 'any', required: false })
   @IsOptional()
   fileArray: any;
   @ApiProperty({ type: 'string', format: 'binary', required: false })
   files: Array<Express.Multer.File>;
-  @ApiProperty()
+  @ApiProperty({ type: 'string', required: false })
   @IsString()
   @IsOptional()
   fileUrl: string;

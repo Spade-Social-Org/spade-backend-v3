@@ -3,14 +3,14 @@ import { BaseModel } from './BaseModel';
 import { UserModel } from './UserModel';
 import { PostModel } from './PostModel';
 
-@Entity('post_likes')
+@Entity('post_bookmarks')
 @Unique(['post_id', 'user_id'])
-export class PostLikeModel extends BaseModel {
+export class PostBookmarkModel extends BaseModel {
   @Column({ type: 'int', nullable: true })
   post_id: number;
 
   @Column({ type: 'boolean', nullable: true })
-  unlike: boolean;
+  bookmark: boolean;
 
   @Column({ type: 'int', nullable: true })
   user_id: number;

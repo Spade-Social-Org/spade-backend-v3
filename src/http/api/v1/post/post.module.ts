@@ -10,6 +10,7 @@ import { UserModule } from '../user/user.module';
 import { PostController } from './post.controller';
 import { MatchModel } from '~/database/models/MatchModel';
 import { PostLikeModel } from '~/database/models/PostLikeModel';
+import { PostBookmarkModel } from '~/database/models/PostBookmarkModel';
 
 @Module({
   imports: [
@@ -19,6 +20,7 @@ import { PostLikeModel } from '~/database/models/PostLikeModel';
       FeedModel,
       MatchModel,
       PostLikeModel,
+      PostBookmarkModel,
     ]),
     UserModule,
   ],

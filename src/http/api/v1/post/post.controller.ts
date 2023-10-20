@@ -34,6 +34,7 @@ import { BadRequestAppException } from '~/http/exceptions/BadRequestAppException
 import { ResponseMessage } from '~/constant/ResponseMessageEnums';
 import { PostService } from './post.service';
 import { createPostDto } from './post.dto';
+import { BookmarkEnum, LikeEnum } from '~/constant/ModelEnums';
 
 @ApiTags('Post')
 @ApiBearerAuth('Bearer')
@@ -75,14 +76,33 @@ export class PostController extends BaseAppController {
   @ApiOperation({ summary: 'like a post' })
   @ApiResponse({ status: 200, description: 'Ok.' })
   @ApiResponse({ status: 500, description: 'Internal Server Error.' })
-  @Patch('like/:id')
+  @Patch('like/:postId/:action')
   async likePost(
-    @Param('id') id: number,
+    @Param('postId') postId: number,
+    @Param('action') action: LikeEnum,
     @nestjsRequest() req: any,
     @Res() res: Response,
   ) {
     const userId = req.user.userId;
-    const result = await this.postService.likePost(id, userId);
+    const result = await this.postService.likePost({ postId, userId, action });
+    return this.getHttpResponse().setDataWithKey('data', result).send(req, res);
+  }
+  @ApiOperation({ summary: 'bookmark a post' })
+  @ApiResponse({ status: 200, description: 'Ok.' })
+  @ApiResponse({ status: 500, description: 'Internal Server Error.' })
+  @Patch('bookmark/:postId/:action')
+  async bookmarkPost(
+    @Param('postId') postId: number,
+    @Param('action') action: BookmarkEnum,
+    @nestjsRequest() req: any,
+    @Res() res: Response,
+  ) {
+    const userId = req.user.userId;
+    const result = await this.postService.bookmarkPost({
+      postId,
+      userId,
+      action,
+    });
     return this.getHttpResponse().setDataWithKey('data', result).send(req, res);
   }
 
@@ -107,6 +127,18 @@ export class PostController extends BaseAppController {
     return this.getHttpResponse().sendResponseBody(res, {
       data: result.feeds,
       meta: result.meta,
+    });
+  }
+  @ApiOperation({ summary: 'Get user  bookmarks' })
+  @ApiResponse({ status: 200, description: 'Ok.' })
+  @ApiResponse({ status: 500, description: 'Internal Server Error.' })
+  @Get('user/bookmarks')
+  async getUserBookmarks(@nestjsRequest() req: any, @Res() res: Response) {
+    const userId = req.user.userId;
+
+    const result = await this.postService.getBookmarkPost(userId);
+    return this.getHttpResponse().sendResponseBody(res, {
+      data: result,
     });
   }
 }

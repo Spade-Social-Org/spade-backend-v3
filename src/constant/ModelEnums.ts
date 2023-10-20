@@ -39,3 +39,11 @@ export enum PersonalityEnum {
   intJ = -100,
   intY = 100,
 }
+export enum LikeEnum {
+  LIKE = 'like',
+  UNLIKE = 'unlike',
+}
+export enum BookmarkEnum {
+  SAVE = 'save',
+  REMOVE = 'remove',
+}

@@ -13,15 +13,22 @@ import { AppLogger } from '~/shared/AppLogger';
 import { fileUpload, generatePaginationMeta } from '~/utils/general';
 
 import { FileModel } from '~/database/models/FileModel';
-import { FileEntityType, FileType } from '~/constant/ModelEnums';
+import {
+  BookmarkEnum,
+  FileEntityType,
+  FileType,
+  LikeEnum,
+} from '~/constant/ModelEnums';
 import { PostModel } from '~/database/models/PostModel';
 import { UserService } from '../user/user.service';
 import { MatchModel } from '~/database/models/MatchModel';
 import { FeedModel } from '~/database/models/feedModel';
 import dataSource from '~/database/connections/default';
 import { createPostDto } from './post.dto';
-import { PaginationData } from '~/constant/interface';
+import { IBookmark, ILike, PaginationData } from '~/constant/interface';
 import { PostLikeModel } from '~/database/models/PostLikeModel';
+import { QueryDeepPartialEntity } from 'typeorm/query-builder/QueryPartialEntity';
+import { PostBookmarkModel } from '~/database/models/PostBookmarkModel';
 
 @Injectable()
 export class PostService {
@@ -36,6 +43,8 @@ export class PostService {
 
     @InjectRepository(PostLikeModel)
     private postLikeRepository: Repository<PostLikeModel>,
+    @InjectRepository(PostBookmarkModel)
+    private postBookmarkRepository: Repository<PostBookmarkModel>,
 
     @InjectRepository(FileModel)
     private fileRepository: Repository<FileModel>,
@@ -69,7 +78,7 @@ export class PostService {
 
       //add it to  feed of all  the users matchers
       //TODO: MOVE THIS TO A QUEUE  TO BE PROCESSED BY A SEPERATE THREAD/PROCESS
-      await this.createFeed(post.id, userID);
+      await this.createFeed(post.id, userID, payload.is_story);
       return (await this.findOne(post.id)) as PostModel;
     } catch (error) {
       this.appLogger.logError(error);
@@ -111,7 +120,11 @@ export class PostService {
       throw new ServerAppException(ResponseMessage.SERVER_ERROR);
     }
   }
-  async createFeed(postId: number, userId: number): Promise<void> {
+  async createFeed(
+    postId: number,
+    userId: number,
+    isStory: boolean,
+  ): Promise<void> {
     //  find all users that have matched with this user
     const matches = await this.matchRepository.find({
       where: [{ user_id_1: userId }, { user_id_2: userId }],
@@ -121,6 +134,13 @@ export class PostService {
       posted_by: userId,
       user_id: match.user_id_1 === userId ? match.user_id_2 : match.user_id_1,
     }));
+    if (isStory) {
+      feedPayload.push({
+        post_id: postId,
+        posted_by: userId,
+        user_id: userId,
+      });
+    }
     //loop through them and prepare the feed payload {post_id:postId,posted_by:userId,user_id:match.id}
     // save the feed for all the matches
     await this.feedRepository
@@ -166,7 +186,6 @@ export class PostService {
     page?: number,
     pageSize?: number,
   ): Promise<{ feeds: FeedModel[]; meta: PaginationData }> {
-    //TODO: PAGINATION
     const _page = page && Number(page) > 0 ? Number(page) : 1;
     const take = pageSize && Number(pageSize) > 0 ? Number(pageSize) : 15;
     const skip = (_page - 1) * take;
@@ -179,10 +198,10 @@ export class PostService {
     poster."name" as poster_name ,
     posterFiles.file_url as poster_image,
     (
-      select count(*) from post_likes plikes where plikes.post_id = post.id
-    ) as number_of_likes
+      select count(plikes.id) from post_likes plikes where plikes.post_id = post.id and plikes.unlike is false
+    ) as number_of_likes,
    
-    
+    CASE WHEN COALESCE((SELECT COUNT(plikes.id) from post_likes plikes where plikes.post_id = post.id and plikes.user_id =${userId} and plikes.unlike is false LIMIT 1), 0) = 1 THEN 'true' ELSE 'false' END AS liked_post
   from 
     feeds feed 
     inner join users poster on poster.id = feed.posted_by 
@@ -245,13 +264,59 @@ export class PostService {
       throw new ServerAppException(ResponseMessage.SERVER_ERROR);
     }
   }
-  async likePost(postId: number, userId: number): Promise<void> {
+  //
+  async likePost(data: ILike): Promise<void> {
     try {
-      const like = new PostLikeModel();
-      like.post_id = postId;
-      like.user_id = userId;
-
-      await this.postLikeRepository.save(like);
+      const likeData: any = {
+        post_id: data.postId,
+        user_id: data.userId,
+      };
+      likeData['unlike'] =
+        data.action.toLowerCase() == LikeEnum.UNLIKE ? true : false;
+      await this.postLikeRepository
+        .createQueryBuilder()
+        .insert()
+        .into(PostLikeModel)
+        .values(likeData as QueryDeepPartialEntity<PostLikeModel>)
+        .orUpdate(Object.keys(likeData), ['post_id', 'user_id'])
+        .execute();
+    } catch (error) {
+      this.appLogger.logError(error);
+      if (error instanceof BaseAppException) {
+        throw error;
+      }
+      throw new ServerAppException(ResponseMessage.SERVER_ERROR);
+    }
+  }
+  async bookmarkPost(data: IBookmark): Promise<void> {
+    try {
+      const bookmarkData: any = {
+        post_id: data.postId,
+        user_id: data.userId,
+      };
+      bookmarkData['bookmark'] =
+        data.action.toLowerCase() == BookmarkEnum.SAVE ? true : false;
+      await this.postBookmarkRepository
+        .createQueryBuilder()
+        .insert()
+        .into(PostBookmarkModel)
+        .values(bookmarkData as QueryDeepPartialEntity<PostBookmarkModel>)
+        .orUpdate(Object.keys(bookmarkData), ['post_id', 'user_id'])
+        .execute();
+    } catch (error) {
+      this.appLogger.logError(error);
+      if (error instanceof BaseAppException) {
+        throw error;
+      }
+      throw new ServerAppException(ResponseMessage.SERVER_ERROR);
+    }
+  }
+  async getBookmarkPost(userId: number): Promise<PostBookmarkModel[] | null> {
+    try {
+      return await this.postBookmarkRepository.find({
+        where: { bookmark: true, user_id: userId },
+        relations: { post: { files: true } },
+      });
     } catch (error) {
       this.appLogger.logError(error);
       if (error instanceof BaseAppException) {

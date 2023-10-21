@@ -196,6 +196,7 @@ export class PostService {
     post.id,
     post.created_at,
     poster."name" as poster_name ,
+    poster.id as poster_id,
     posterFiles.file_url as poster_image,
     (
       select count(plikes.id) from post_likes plikes where plikes.post_id = post.id and plikes.unlike is false

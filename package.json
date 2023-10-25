@@ -1,7 +1,7 @@
 {
   "name": "Spade",
   "version": "0.0.1",
-  "description": "A social media application",
+  "description": "Backend for Spade which is a social media application",
   "author": "",
   "private": true,
   "license": "MIT",

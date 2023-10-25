@@ -1,7 +1,6 @@
 import { join } from 'path';
 import * as bcrypt from 'bcrypt';
 import { v2 as cloudinary } from 'cloudinary';
-import fs from 'fs';
 import { ServerAppException } from '~/http/exceptions/ServerAppException';
 import { ResponseMessage } from '~/constant/ResponseMessageEnums';
 import { Response, Request, Express } from 'express';
@@ -11,6 +10,7 @@ import processEnvObj from '~/config/envs';
 import streamifier from 'streamifier';
 import { PaginationData } from '~/constant/interface';
 import { File, Web3Storage } from 'web3.storage';
+import { TextEncoder } from 'util';
 
 cloudinary.config({
   cloud_name: processEnvObj.CLOUDINARY_CLOUD_NAME,

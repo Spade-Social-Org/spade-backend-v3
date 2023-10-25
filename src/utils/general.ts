@@ -106,7 +106,7 @@ export const fileUpload = async (
         'data:image/jpeg;base64,' + assets.buffer.toString('base64');
       const file = [new File([uploadStr], assets.filename)];
       const cid = await client.put(file);
-      url.push(`https://${cid}.ipfs.w3s.link/${asset.filename}`);
+      url.push(`https://${cid}.ipfs.w3s.link/${assets.filename}`);
     }
     return url;
   } catch (error) {

@@ -87,21 +87,17 @@ export const fileUpload = async (assets: Express.Multer.File[]) => {
   const client = new Web3Storage({ token: processEnvObj.WEB3STORAGE_API_KEY });
   try {
     const url = [];
+
     if (assets.length) {
       for (const asset of assets) {
-        const content = Buffer.from(JSON.stringify(asset));
+        const content = asset.buffer;
         const name = asset.originalname;
         const file = new File([content], name);
         const cid = await client.put([file]);
         url.push(`https://${cid}.ipfs.w3s.link/${name}`);
       }
-    } else {
-      const content = Buffer.from(JSON.stringify(assets[0]));
-      const name = assets[0].originalname;
-      const file = new File([content], name);
-      const cid = await client.put([file]);
-      url.push(`https://${cid}.ipfs.w3s.link/${name}`);
     }
+
     return url;
   } catch (error) {
     console.log(error);

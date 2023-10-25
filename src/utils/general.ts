@@ -104,6 +104,7 @@ export const fileUpload = async (
       assets = assets as unknown as Express.Multer.File;
       const uploadStr =
         'data:image/jpeg;base64,' + assets.buffer.toString('base64');
+      console.log('filename: ', assets.filename);
       const file = [new File([uploadStr], assets.filename)];
       const cid = await client.put(file);
       url.push(`https://${cid}.ipfs.w3s.link/${assets.filename}`);

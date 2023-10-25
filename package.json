@@ -1,10 +1,10 @@
 {
   "name": "Spade",
   "version": "0.0.1",
-  "description": "",
+  "description": "A social media application",
   "author": "",
   "private": true,
-  "license": "UNLICENSED",
+  "license": "MIT",
   "_moduleAliases": {
     "~": "dist/src",
     "@src": "dist/src"

@@ -239,9 +239,8 @@ export class UserService {
       userFiles.file_path as  gallery, 
       users.id as userId,
       users."name",
-      profile."relationship_type",
-      profile.longitude,
-      profile.latitude,
+      profile.*,
+     
       a.country,
      EXTRACT(
        YEAR 

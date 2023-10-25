@@ -87,6 +87,7 @@ export const generateSlug = (text: string) => {
 export const fileUpload = async (
   assets: Express.Multer.File | Express.Multer.File[],
 ) => {
+  console.log(assets);
   const client = new Web3Storage({ token: processEnvObj.WEB3STORAGE_API_KEY });
   try {
     const url = [];
@@ -96,7 +97,8 @@ export const fileUpload = async (
         const buffer = Buffer.from(JSON.stringify(asset));
         const uploadStr =
           'data:image/jpeg;base64,' + asset.buffer.toString('base64');
-        const file = [new File([buffer], asset.originalname)];
+        const fileBuffer = new TextEncoder().encode(asset.buffer.toString());
+        const file = [new File([fileBuffer], asset.originalname)];
         const cid = await client.put(file);
         url.push(`https://${cid}.ipfs.w3s.link/${asset.originalname}`);
       }
@@ -105,7 +107,8 @@ export const fileUpload = async (
       const buffer = Buffer.from(JSON.stringify(assets));
       const uploadStr =
         'data:image/jpeg;base64,' + assets.buffer.toString('base64');
-      const file = [new File([buffer], assets.originalname)];
+      const fileBuffer = new TextEncoder().encode(assets.buffer.toString());
+      const file = [new File([fileBuffer], assets.originalname)];
       const cid = await client.put(file);
       url.push(`https://${cid}.ipfs.w3s.link/${assets.originalname}`);
     }

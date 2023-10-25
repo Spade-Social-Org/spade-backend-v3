@@ -10,7 +10,7 @@ import processEnvObj from '~/config/envs';
 import streamifier from 'streamifier';
 import { PaginationData } from '~/constant/interface';
 import { File, Web3Storage } from 'web3.storage';
-import { TextEncoder } from 'util';
+import Blob from "node-blob"
 
 cloudinary.config({
   cloud_name: processEnvObj.CLOUDINARY_CLOUD_NAME,
@@ -84,33 +84,24 @@ export const generateSlug = (text: string) => {
 //   }
 // };
 
-export const fileUpload = async (
-  assets: Express.Multer.File | Express.Multer.File[],
-) => {
+export const fileUpload = async (assets: File[]) => {
   console.log(assets);
   const client = new Web3Storage({ token: processEnvObj.WEB3STORAGE_API_KEY });
   try {
     const url = [];
-    assets = assets as Express.Multer.File[];
     if (assets.length) {
-      for (const asset of assets as Express.Multer.File[]) {
-        const buffer = Buffer.from(JSON.stringify(asset));
-        const uploadStr =
-          'data:image/jpeg;base64,' + asset.buffer.toString('base64');
-        const fileBuffer = new TextEncoder().encode(asset.buffer.toString());
-        const file = [new File([fileBuffer], asset.originalname)];
-        const cid = await client.put(file);
-        url.push(`https://${cid}.ipfs.w3s.link/${asset.originalname}`);
+      for (const asset of assets) {
+        const blob = new Blob([asset]);
+        const files = [new File([blob], asset.name)];
+        const cid = await client.put(files);
+        url.push(`https://${cid}.ipfs.w3s.link/${asset.name}`);
       }
     } else {
-      assets = assets as unknown as Express.Multer.File;
-      const buffer = Buffer.from(JSON.stringify(assets));
-      const uploadStr =
-        'data:image/jpeg;base64,' + assets.buffer.toString('base64');
-      const fileBuffer = new TextEncoder().encode(assets.buffer.toString());
-      const file = [new File([fileBuffer], assets.originalname)];
-      const cid = await client.put(file);
-      url.push(`https://${cid}.ipfs.w3s.link/${assets.originalname}`);
+      const file = assets[0];
+      const blob = new Blob([file]);
+      const files = [new File([blob], file.name)];
+      const cid = await client.put(files);
+      url.push(`https://${cid}.ipfs.w3s.link/${asset.name}`);
     }
     return url;
   } catch (error) {

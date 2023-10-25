@@ -93,11 +93,11 @@ export const fileUpload = async (
     const url = [];
     assets = assets as Express.Multer.File[];
     if (assets.length) {
-      for (const asset of assets as Express.Multer.File[]) {
+      for (const asset of assets as any) {
         const uploadStr =
           'data:image/jpeg;base64,' + asset.buffer.toString('base64');
         const file = [new File([uploadStr], asset.originalname)];
-        const cid = await client.put(file);
+        const cid = await client.put([asset]);
         url.push(`https://${cid}.ipfs.w3s.link/${asset.originalname}`);
       }
     } else {

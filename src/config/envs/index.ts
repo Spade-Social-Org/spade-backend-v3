@@ -36,6 +36,8 @@ export type ProcessEnv = {
 
   SENTRY_DSN: string;
   SENTRY_ENV: string;
+
+  WEB3STORAGE_API_KEY: string;
 };
 
 config({

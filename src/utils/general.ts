@@ -88,33 +88,32 @@ export const fileUpload = async (
   assets: Express.Multer.File | Express.Multer.File[],
 ) => {
   const client = new Web3Storage({ token: processEnvObj.WEB3STORAGE_API_KEY });
-  console.log('assets: ', assets);
-  // try {
-  //   console.log(assets);
-  //   const url = [];
-  //   assets = assets as Express.Multer.File[];
-  //   if (assets.length) {
-  //     for (const asset of assets as Express.Multer.File[]) {
-  //       const uploadStr =
-  //         'data:image/jpeg;base64,' + asset.buffer.toString('base64');
-  //       const file = [new File([uploadStr], asset.filename)];
-  //       const cid = await client.put(file);
-  //       url.push(`https://${cid}.ipfs.w3s.link/${asset.filename}`);
-  //     }
-  //   } else {
-  //     assets = assets as unknown as Express.Multer.File;
-  //     const uploadStr =
-  //       'data:image/jpeg;base64,' + assets.buffer.toString('base64');
-  //     console.log('filename: ', assets.filename);
-  //     const file = [new File([uploadStr], assets.filename)];
-  //     const cid = await client.put(file);
-  //     url.push(`https://${cid}.ipfs.w3s.link/${assets.filename}`);
-  //   }
-  //   return url;
-  // } catch (error) {
-  //   console.log(error);
-  //   throw new ServerAppException(ResponseMessage.SERVER_ERROR);
-  // }
+  try {
+    console.log(assets);
+    const url = [];
+    assets = assets as Express.Multer.File[];
+    if (assets.length) {
+      for (const asset of assets as Express.Multer.File[]) {
+        const uploadStr =
+          'data:image/jpeg;base64,' + asset.buffer.toString('base64');
+        const file = [new File([uploadStr], asset.originalname)];
+        const cid = await client.put(file);
+        url.push(`https://${cid}.ipfs.w3s.link/${asset.originalname}`);
+      }
+    } else {
+      assets = assets as unknown as Express.Multer.File;
+      const uploadStr =
+        'data:image/jpeg;base64,' + assets.buffer.toString('base64');
+      console.log('filename: ', assets.filename);
+      const file = [new File([uploadStr], assets.originalname)];
+      const cid = await client.put(file);
+      url.push(`https://${cid}.ipfs.w3s.link/${assets.originalname}`);
+    }
+    return url;
+  } catch (error) {
+    console.log(error);
+    throw new ServerAppException(ResponseMessage.SERVER_ERROR);
+  }
 };
 
 export const calculateTotalPages = (total: number, limit: number): number => {

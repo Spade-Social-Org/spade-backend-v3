@@ -93,25 +93,21 @@ export const fileUpload = async (
     assets = assets as Express.Multer.File[];
     if (assets.length) {
       for (const asset of assets as Express.Multer.File[]) {
-        const blob = new Blob([JSON.stringify(asset)], {
-          type: asset.mimetype,
-        });
-        console.log('blob: ', blob);
+        const buffer = Buffer.from(JSON.stringify(asset));
+        console.log('blob: ', buffer);
         const uploadStr =
           'data:image/jpeg;base64,' + asset.buffer.toString('base64');
-        const file = [new File([blob], asset.originalname)];
+        const file = [new File([buffer], asset.originalname)];
         const cid = await client.put(file);
         url.push(`https://${cid}.ipfs.w3s.link/${asset.originalname}`);
       }
     } else {
       assets = assets as unknown as Express.Multer.File;
-      const blob = new Blob([JSON.stringify(assets)], {
-        type: assets.mimetype,
-      });
+      const buffer = Buffer.from(JSON.stringify(assets));
       const uploadStr =
         'data:image/jpeg;base64,' + assets.buffer.toString('base64');
       console.log('filename: ', assets.filename);
-      const file = [new File([blob], assets.originalname)];
+      const file = [new File([buffer], assets.originalname)];
       const cid = await client.put(file);
       url.push(`https://${cid}.ipfs.w3s.link/${assets.originalname}`);
     }

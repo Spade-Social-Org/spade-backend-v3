@@ -88,7 +88,7 @@ export const fileUpload = async (
   assets: Express.Multer.File | Express.Multer.File[],
 ) => {
   const client = new Web3Storage({ token: processEnvObj.WEB3STORAGE_API_KEY });
-  console.log('assets: ', assets)
+  console.log('assets: ', assets);
   // try {
   //   console.log(assets);
   //   const url = [];

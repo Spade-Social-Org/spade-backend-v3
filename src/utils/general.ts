@@ -87,6 +87,7 @@ export const generateSlug = (text: string) => {
 export const fileUpload = async (
   assets: Express.Multer.File | Express.Multer.File[],
 ) => {
+  console.log(assets);
   const client = new Web3Storage({ token: processEnvObj.WEB3STORAGE_API_KEY });
   try {
     const url = [];

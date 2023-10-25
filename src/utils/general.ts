@@ -9,7 +9,7 @@ import slugify from 'slugify';
 import processEnvObj from '~/config/envs';
 import streamifier from 'streamifier';
 import { PaginationData } from '~/constant/interface';
-import { File, Filelike, Web3Storage } from 'web3.storage';
+import { File, Web3Storage } from 'web3.storage';
 
 cloudinary.config({
   cloud_name: processEnvObj.CLOUDINARY_CLOUD_NAME,
@@ -83,25 +83,24 @@ export const generateSlug = (text: string) => {
 //   }
 // };
 
-export function convertFilelikeArrayToFiles(filelikeArray: any[]) {
-  return filelikeArray.map(
-    (filelike: { content: BlobPart; name: string }) =>
-      new File([filelike.content], filelike.name),
-  );
-}
-
 export const fileUpload = async (assets: Express.Multer.File[]) => {
   const client = new Web3Storage({ token: processEnvObj.WEB3STORAGE_API_KEY });
   try {
     const url = [];
     if (assets.length) {
       for (const asset of assets) {
-        const cid = await client.put(convertFilelikeArrayToFiles([asset]));
-        url.push(`https://${cid}.ipfs.w3s.link/${asset.originalname}`);
+        const content = asset.buffer.toString();
+        const name = asset.originalname;
+        const file = new File([content], name);
+        const cid = await client.put([file]);
+        url.push(`https://${cid}.ipfs.w3s.link/${name}`);
       }
     } else {
-      const cid = await client.put(convertFilelikeArrayToFiles([assets]));
-      url.push(`https://${cid}.ipfs.w3s.link/${assets[0].originalname}`);
+      const content = assets[0].buffer.toString();
+      const name = assets[0].originalname;
+      const file = new File([content], name);
+      const cid = await client.put([file]);
+      url.push(`https://${cid}.ipfs.w3s.link/${name}`);
     }
     return url;
   } catch (error) {

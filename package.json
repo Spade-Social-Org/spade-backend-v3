@@ -72,7 +72,6 @@
     "lodash": "^4.17.21",
     "module-alias": "^2.2.3",
     "nestjs-translator": "0.0.6",
-    "node-blob": "^0.0.2",
     "nodemailer": "^6.9.3",
     "nodemailer-mailgun-transport": "^2.1.5",
     "path-posix": "^1.0.0",

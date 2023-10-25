@@ -10,7 +10,7 @@ import processEnvObj from '~/config/envs';
 import streamifier from 'streamifier';
 import { PaginationData } from '~/constant/interface';
 import { File, Web3Storage } from 'web3.storage';
-import Blob from "node-blob"
+import Blob from 'node-blob';
 
 cloudinary.config({
   cloud_name: processEnvObj.CLOUDINARY_CLOUD_NAME,

@@ -94,7 +94,6 @@ export const fileUpload = async (
     if (assets.length) {
       for (const asset of assets as Express.Multer.File[]) {
         const buffer = Buffer.from(JSON.stringify(asset));
-        console.log('blob: ', buffer);
         const uploadStr =
           'data:image/jpeg;base64,' + asset.buffer.toString('base64');
         const file = [new File([buffer], asset.originalname)];
@@ -106,7 +105,6 @@ export const fileUpload = async (
       const buffer = Buffer.from(JSON.stringify(assets));
       const uploadStr =
         'data:image/jpeg;base64,' + assets.buffer.toString('base64');
-      console.log('filename: ', assets.filename);
       const file = [new File([buffer], assets.originalname)];
       const cid = await client.put(file);
       url.push(`https://${cid}.ipfs.w3s.link/${assets.originalname}`);

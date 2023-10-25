@@ -89,14 +89,14 @@ export const fileUpload = async (assets: Express.Multer.File[]) => {
     const url = [];
     if (assets.length) {
       for (const asset of assets) {
-        const content = asset.buffer.toString();
+        const content = Buffer.from(JSON.stringify(asset));
         const name = asset.originalname;
         const file = new File([content], name);
         const cid = await client.put([file]);
         url.push(`https://${cid}.ipfs.w3s.link/${name}`);
       }
     } else {
-      const content = assets[0].buffer.toString();
+      const content = Buffer.from(JSON.stringify(assets[0]));
       const name = assets[0].originalname;
       const file = new File([content], name);
       const cid = await client.put([file]);

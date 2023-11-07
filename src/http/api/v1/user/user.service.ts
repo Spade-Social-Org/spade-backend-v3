@@ -17,7 +17,7 @@ import {
   addAddressDto,
   addImageDto,
 } from './user.dto';
-import { GenerateOTP, fileUpload } from '~/utils/general';
+import { GenerateOTP, calculateAge, fileUpload } from '~/utils/general';
 import { assign } from 'lodash';
 import { ProfileModel } from '~/database/models/ProfileModel';
 import { FileModel } from '~/database/models/FileModel';
@@ -290,8 +290,15 @@ export class UserService {
     ORDER BY 
     distance`);
       const profiles = await dataSource.manager.query(query, params);
-
-      return profiles;
+      return profiles.map((profile: any) => {
+        const compatibilityScore = this.getCompatibility(profile, {
+          user,
+          minAge,
+          maxAge,
+        });
+        profile.compatibility = `${compatibilityScore}%`;
+        return profile;
+      });
     } catch (error) {
       this.appLogger.logError(error);
       if (error instanceof BaseAppException) {
@@ -454,6 +461,59 @@ export class UserService {
       }
       throw new ServerAppException(ResponseMessage.SERVER_ERROR);
     }
+  }
+  getCompatibility(randomProfile: any, userProfile: any): number {
+    console.log({ randomProfile, userProfile });
+    let total = 0;
+    if (
+      this.getAgeCompatibility(
+        randomProfile?.dob,
+        userProfile?.minAge,
+        userProfile?.maxAge,
+      )
+    ) {
+      total = total + 50;
+    }
+    if (
+      randomProfile?.relationship_type == userProfile?.user?.relationship_type
+    ) {
+      total = total + 90;
+    }
+    if (randomProfile?.gender == userProfile?.user?.gender_preference) {
+      total = total + 80;
+    }
+    if (
+      this.getHobbyCompatibility(
+        randomProfile?.hobbies,
+        userProfile?.user?.hobbies,
+      )
+    ) {
+      total = total + 90;
+    }
+    total = total + this.getDistanceCompatibility(randomProfile?.distance);
+    return total / 5;
+  }
+  getAgeCompatibility(dob: string, min: number, max: number): boolean {
+    const randomUserAge = calculateAge(dob);
+    return randomUserAge >= min && randomUserAge <= max;
+  }
+  getDistanceCompatibility(distance: number) {
+    return Math.max(0, 50 - (50 * distance) / 200);
+  }
+  getHobbyCompatibility(array1: any, array2: any): boolean {
+    console.log({ array1: array1.slice(1, -1).split(','), array2 });
+
+    if (!array1 || !array2) return false;
+
+    const newArray1 = array1.slice(1, -1).split(',');
+    const newArray2 = array2.slice(1, -1).split(',');
+    const set = new Set(newArray1);
+    for (const item of newArray2) {
+      if (set.has(item)) {
+        return true;
+      }
+    }
+    return false;
   }
 }
 

@@ -114,3 +114,28 @@ export const generatePaginationMeta = (
   };
   return meta;
 };
+export const calculateAge = (dateOfBirth: string): number => {
+  const currentDate = new Date();
+  const dob = new Date(dateOfBirth);
+  let age = currentDate.getFullYear() - dob.getFullYear();
+
+  // Check if the birthday for this year has already occurred
+  if (
+    currentDate.getMonth() < dob.getMonth() ||
+    (currentDate.getMonth() === dob.getMonth() &&
+      currentDate.getDate() < dob.getDate())
+  ) {
+    age--;
+  }
+
+  return age;
+};
+export const calculateAverage = (numbers: number[]): number => {
+  if (numbers.length === 0) {
+    return 0; // Return 0 for an empty array (you can also handle this differently)
+  }
+
+  const sum = numbers.reduce((total, num) => total + num, 0);
+  const average = sum / numbers.length;
+  return average;
+};

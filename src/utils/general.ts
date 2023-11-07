@@ -1,7 +1,6 @@
 import { join } from 'path';
 import * as bcrypt from 'bcrypt';
 import { v2 as cloudinary } from 'cloudinary';
-import fs from 'fs';
 import { ServerAppException } from '~/http/exceptions/ServerAppException';
 import { ResponseMessage } from '~/constant/ResponseMessageEnums';
 import { Response, Request, Express } from 'express';
@@ -10,6 +9,7 @@ import slugify from 'slugify';
 import processEnvObj from '~/config/envs';
 import streamifier from 'streamifier';
 import { PaginationData } from '~/constant/interface';
+import { File, Web3Storage } from 'web3.storage';
 
 cloudinary.config({
   cloud_name: processEnvObj.CLOUDINARY_CLOUD_NAME,
@@ -50,30 +50,52 @@ export const generateSlug = (text: string) => {
   });
 };
 
-export const fileUpload = async (
-  assets: Express.Multer.File | Express.Multer.File[],
-) => {
+// export const fileUpload = async (
+//   assets: Express.Multer.File | Express.Multer.File[],
+// ) => {
+//   try {
+//     console.log(assets);
+//     const url = [];
+//     assets = assets as Express.Multer.File[];
+//     if (assets.length) {
+//       for (const asset of assets as Express.Multer.File[]) {
+//         const uploadStr =
+//           'data:image/jpeg;base64,' + asset.buffer.toString('base64');
+//         const result = await cloudinary.uploader.upload(uploadStr);
+//         url.push(result.secure_url);
+
+//         // fs.unlinkSync(asset.path);
+//       }
+//     } else {
+//       assets = assets as unknown as Express.Multer.File;
+
+//       const uploadStr =
+//         'data:image/jpeg;base64,' + assets.buffer.toString('base64');
+//       const result = await cloudinary.uploader.upload(uploadStr);
+//       url.push(result.secure_url);
+//       //fs.unlinkSync(assets.path);
+//     }
+
+//     return url;
+//   } catch (error) {
+//     console.log(error);
+//     throw new ServerAppException(ResponseMessage.SERVER_ERROR);
+//   }
+// };
+
+export const fileUpload = async (assets: Express.Multer.File[]) => {
+  const client = new Web3Storage({ token: processEnvObj.WEB3STORAGE_API_KEY });
   try {
-    console.log(assets);
     const url = [];
-    assets = assets as Express.Multer.File[];
+
     if (assets.length) {
-      for (const asset of assets as Express.Multer.File[]) {
-        const uploadStr =
-          'data:image/jpeg;base64,' + asset.buffer.toString('base64');
-        const result = await cloudinary.uploader.upload(uploadStr);
-        url.push(result.secure_url);
-
-        // fs.unlinkSync(asset.path);
+      for (const asset of assets) {
+        const content = asset.buffer;
+        const name = asset.originalname;
+        const file = new File([content], name);
+        const cid = await client.put([file]);
+        url.push(`https://${cid}.ipfs.w3s.link/${name}`);
       }
-    } else {
-      assets = assets as unknown as Express.Multer.File;
-
-      const uploadStr =
-        'data:image/jpeg;base64,' + assets.buffer.toString('base64');
-      const result = await cloudinary.uploader.upload(uploadStr);
-      url.push(result.secure_url);
-      //fs.unlinkSync(assets.path);
     }
 
     return url;
@@ -82,6 +104,7 @@ export const fileUpload = async (
     throw new ServerAppException(ResponseMessage.SERVER_ERROR);
   }
 };
+
 export const calculateTotalPages = (total: number, limit: number): number => {
   const numberToRound = total / limit;
   const remainder = total % limit;

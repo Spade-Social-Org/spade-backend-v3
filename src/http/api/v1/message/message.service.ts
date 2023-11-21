@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable, forwardRef } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { UserService } from '../user/user.service';
 import { Repository } from 'typeorm';
@@ -15,6 +15,8 @@ import { MatchModel } from '~/database/models/MatchModel';
 import { BadRequestAppException } from '~/http/exceptions/BadRequestAppException';
 import { UserGroupModel } from '~/database/models/UserGroupModel';
 import dataSource from '~/database/connections/default';
+import { NotificationService } from '../notification/notification.service';
+import { UserModel } from '~/database/models/UserModel';
 
 @Injectable()
 export class MessageService {
@@ -33,27 +35,16 @@ export class MessageService {
     @InjectRepository(UserGroupModel)
     private userGroupRespository: Repository<UserGroupModel>,
     private userService: UserService,
+    @Inject(forwardRef(() => NotificationService))
+    private notificationService: NotificationService,
   ) {}
   async create(payload: createMessageDto): Promise<MessageModel> {
     console.log(payload);
 
-    /**
-     * send the message body {content,creator_id,receiver_id,group_id}
-     * if(receiver_id) find the user to receive the message and find the conversation with the creator_id and the receiver_id
-     * if(group_id) find the group to receive the message and find the conversation with the group_id
-     * if no group or no receiver  throw an error
-     *
-     * if(!conversation) create a new conversation either for the creator_id and the receiver_id or for the group_id
-     * create the message with the message payload  and  conversation_id
-     *  throw new NotFoundAppException(ResponseMessage.USER_NOT_FOUND);
-     * throw new BadRequestAppException(ResponseMessage.BAD_REQUEST);
-     *
-     *
-     *
-     */
     try {
       let conversation: ConversationModel | null;
       const senderExist = await this.userService.findOneById(payload.sender_id);
+      let receiver: UserModel;
       if (!senderExist) {
         throw new NotFoundAppException(ResponseMessage.USER_NOT_FOUND);
       }
@@ -90,6 +81,8 @@ export class MessageService {
         ]);
         if (!_user)
           throw new NotFoundAppException(ResponseMessage.USER_NOT_FOUND);
+
+        receiver = _user;
 
         if (!_matches)
           throw new BadRequestAppException(ResponseMessage.BAD_REQUEST);
@@ -142,7 +135,27 @@ export class MessageService {
       newMessage.content = payload.content;
       newMessage.user = senderExist;
 
-      return await this.messageRepository.save(newMessage);
+      const message = await this.messageRepository.save(newMessage);
+      if (payload.receiver_id) {
+        const pushNotificationPayload = {
+          title: 'Message ',
+          body: `${senderExist.name} sent you a message`,
+          data: {},
+          userId: payload.receiver_id,
+        };
+        await Promise.all([
+          this.notificationService.saveMessageNotifications(
+            payload.receiver_id,
+            senderExist.id,
+            message.id,
+          ),
+          this.notificationService.sendPushNotifications(
+            pushNotificationPayload,
+          ),
+        ]);
+      }
+
+      return message;
     } catch (error) {
       this.appLogger.logError(error);
       if (error instanceof BaseAppException) {

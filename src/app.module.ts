@@ -20,6 +20,7 @@ import { AuthModule } from './http/api/v1/auth/auth.module';
 import { PostModule } from './http/api/v1/post/post.module';
 import { GatewayModule } from './http/api/v1/gateway/gateway.module';
 import { MessageModule } from './http/api/v1/message/message.module';
+import { NotificationModule } from './http/api/v1/notification/notification.module';
 
 @Module({
   imports: [
@@ -53,6 +54,7 @@ import { MessageModule } from './http/api/v1/message/message.module';
     PostModule,
     GatewayModule,
     MessageModule,
+    NotificationModule,
   ],
   controllers: [],
   providers: [

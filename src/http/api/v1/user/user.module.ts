@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Module, forwardRef } from '@nestjs/common';
 
 import { UserService } from './user.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
@@ -9,6 +9,7 @@ import { ProfileModel } from '~/database/models/ProfileModel';
 import { FileModel } from '~/database/models/FileModel';
 import { LikeCacheModel } from '~/database/models/LikeCacheModel';
 import { MatchModel } from '~/database/models/MatchModel';
+import { NotificationModule } from '../notification/notification.module';
 
 @Module({
   imports: [
@@ -20,6 +21,7 @@ import { MatchModel } from '~/database/models/MatchModel';
       LikeCacheModel,
       MatchModel,
     ]),
+    forwardRef(() => NotificationModule),
   ],
   providers: [UserService],
   exports: [UserService],

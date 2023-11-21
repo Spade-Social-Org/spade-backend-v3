@@ -76,6 +76,11 @@ export class UpdateUserProfileDto {
   body_type: BodyTypeEnum;
 
   @ApiProperty()
+  @IsString()
+  @IsOptional()
+  fcm_token: string;
+
+  @ApiProperty()
   @IsInt()
   height: number;
 

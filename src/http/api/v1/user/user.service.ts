@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable, forwardRef } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 
 import { Repository } from 'typeorm';
@@ -29,6 +29,7 @@ import {
 import dataSource from '~/database/connections/default';
 import { LikeCacheModel } from '~/database/models/LikeCacheModel';
 import { MatchModel } from '~/database/models/MatchModel';
+import { NotificationService } from '../notification/notification.service';
 
 @Injectable()
 export class UserService {
@@ -46,6 +47,8 @@ export class UserService {
     private likeRepository: Repository<LikeCacheModel>,
     @InjectRepository(MatchModel)
     private matchRepository: Repository<MatchModel>,
+    @Inject(forwardRef(() => NotificationService))
+    private notificationService: NotificationService,
   ) {}
   async createUser(payload: CreateUserDto): Promise<UserModel> {
     try {
@@ -93,7 +96,10 @@ export class UserService {
   async findOneById(id: number): Promise<UserModel | null> {
     try {
       if (!id) throw new BadRequestAppException(ResponseMessage.BAD_REQUEST);
-      const user = this.usersRepository.findOne({ where: { id } });
+      const user = this.usersRepository.findOne({
+        where: { id },
+        relations: { profile: true },
+      });
       if (!user) throw new NotFoundAppException(ResponseMessage.NOT_FOUND);
       return user;
     } catch (error) {
@@ -439,6 +445,7 @@ export class UserService {
       const newLike = new LikeCacheModel();
       newLike.liker = liker as UserModel;
       newLike.likee = likee as UserModel;
+      let match: boolean;
 
       if (hasLikeLikedLiker) {
         const matchUsers = new MatchModel();
@@ -448,11 +455,25 @@ export class UserService {
           this.likeRepository.save(newLike),
           this.matchRepository.save(matchUsers),
         ]);
-        return { match: true };
+        match = true;
       } else {
         await this.likeRepository.save(newLike);
-        return { match: false };
+        match = false;
       }
+      const pushNotificationPayload = {
+        title: 'Message ',
+        body: `${liker?.name} sent you a message`,
+        data: {},
+        userId: likee?.id as number,
+      };
+      await Promise.all([
+        this.notificationService.saveLikeNotifications(
+          likee?.id as number,
+          liker?.id as number,
+        ),
+        this.notificationService.sendPushNotifications(pushNotificationPayload),
+      ]);
+      return { match };
     } catch (error) {
       console.error(error);
       this.appLogger.logError(error);

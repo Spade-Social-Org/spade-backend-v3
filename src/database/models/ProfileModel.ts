@@ -13,6 +13,8 @@ import {
 export class ProfileModel extends BaseModel {
   @Column({ type: 'varchar', nullable: true })
   gender: string;
+  @Column({ type: 'varchar', nullable: true })
+  fcm_token: string;
 
   @Column({ enum: RelationshipTypeEnum, nullable: true })
   relationship_type: RelationshipTypeEnum;

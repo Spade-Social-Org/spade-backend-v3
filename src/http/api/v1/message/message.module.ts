@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Module, forwardRef } from '@nestjs/common';
 
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { MessageService } from './message.service';
@@ -10,6 +10,7 @@ import { GroupModel } from '~/database/models/GroupsModel';
 import { ConversationModel } from '~/database/models/ConversationModel';
 import { UserGroupModel } from '~/database/models/UserGroupModel';
 import { MessageController } from './message.controller';
+import { NotificationModule } from '../notification/notification.module';
 
 @Module({
   imports: [
@@ -22,6 +23,7 @@ import { MessageController } from './message.controller';
       UserGroupModel,
     ]),
     UserModule,
+    forwardRef(() => NotificationModule),
   ],
   providers: [MessageService],
   exports: [MessageService],

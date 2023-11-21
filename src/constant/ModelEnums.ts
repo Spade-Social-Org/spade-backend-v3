@@ -47,3 +47,7 @@ export enum BookmarkEnum {
   SAVE = 'save',
   REMOVE = 'remove',
 }
+export enum NotificationModelEnum {
+  MESSAGE = 'message',
+  LIKE = 'like',
+}

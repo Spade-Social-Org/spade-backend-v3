@@ -17,7 +17,12 @@ import {
   addAddressDto,
   addImageDto,
 } from './user.dto';
-import { GenerateOTP, calculateAge, fileUpload } from '~/utils/general';
+import {
+  GenerateOTP,
+  calculateAge,
+  fileUpload,
+  suggestUserNameFromEmail,
+} from '~/utils/general';
 import { assign } from 'lodash';
 import { ProfileModel } from '~/database/models/ProfileModel';
 import { FileModel } from '~/database/models/FileModel';
@@ -85,6 +90,45 @@ export class UserService {
       const user = this.usersRepository.findOne({ where: { email } });
       if (!user) throw new NotFoundAppException(ResponseMessage.NOT_FOUND);
       return user;
+    } catch (error) {
+      this.appLogger.logError(error);
+      if (error instanceof BaseAppException) {
+        throw error;
+      }
+      throw new ServerAppException(ResponseMessage.SERVER_ERROR);
+    }
+  }
+  async findOneByEmailOrUserName(
+    email: string,
+    username: string,
+  ): Promise<UserModel | null> {
+    try {
+      if (!email) throw new BadRequestAppException(ResponseMessage.BAD_REQUEST);
+      const user = this.usersRepository.findOne({
+        where: [{ email }, { username }],
+      });
+
+      return user;
+    } catch (error) {
+      this.appLogger.logError(error);
+      if (error instanceof BaseAppException) {
+        throw error;
+      }
+      throw new ServerAppException(ResponseMessage.SERVER_ERROR);
+    }
+  }
+  async suggestUserName(email: string): Promise<string> {
+    try {
+      if (!email) throw new BadRequestAppException(ResponseMessage.BAD_REQUEST);
+      const generatedUserName = suggestUserNameFromEmail(email);
+      const user = await this.usersRepository.findOne({
+        where: { username: generatedUserName },
+      });
+      if (user) {
+        await this.suggestUserName(email);
+      }
+
+      return generatedUserName;
     } catch (error) {
       this.appLogger.logError(error);
       if (error instanceof BaseAppException) {

@@ -10,5 +10,6 @@
   "user_registered": "User registered successfully",
   "check_order_products": "Check order products",
   "order_created": "Order created successfully",
-  "get_zid_branch_error": "Error occurred while getting branches from zid"
+  "get_zid_branch_error": "Error occurred while getting branches from zid",
+  "email_or_username_exists": "email or username already exists"
 }

@@ -87,6 +87,7 @@
     "twilio": "^4.16.0",
     "typeorm": "^0.3.17",
     "typeorm-seeding": "^1.6.1",
+    "unique-username-generator": "^1.2.0",
     "until-promise": "^0.3.0",
     "web3.storage": "^4.5.5"
   },

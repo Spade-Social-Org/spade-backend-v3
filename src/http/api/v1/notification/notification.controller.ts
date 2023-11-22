@@ -33,7 +33,7 @@ export class NotificationController extends BaseAppController {
     );
     return this.getHttpResponse().setDataWithKey('data', result).send(req, res);
   }
-  @ApiOperation({ summary: ' get notification for  a user ' })
+  @ApiOperation({ summary: ' update notification for  a user ' })
   @ApiResponse({ status: 200, description: 'Ok.' })
   @ApiResponse({ status: 500, description: 'Internal Server Error.' })
   @Patch('/:id')

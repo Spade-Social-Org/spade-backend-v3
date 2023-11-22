@@ -55,7 +55,7 @@ export class PostController extends BaseAppController {
     @UploadedFiles(
       new ParseFilePipeBuilder()
         .addFileTypeValidator({
-          fileType: /(jpg|jpeg|png|gif)$/,
+          fileType: /(jpg|jpeg|png|gif|mp4|avi|mov)$/,
         })
 
         .build({

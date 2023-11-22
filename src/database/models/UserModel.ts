@@ -27,6 +27,8 @@ export class UserModel extends BaseModel {
 
   @Column({ type: 'varchar', nullable: true })
   name: string;
+  @Column({ type: 'varchar', nullable: true })
+  username: string;
 
   @Column({ type: 'varchar', nullable: true })
   password: string;

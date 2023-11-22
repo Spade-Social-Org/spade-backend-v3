@@ -24,9 +24,14 @@ export class AuthService {
     payload: SignUpDto,
   ): Promise<{ userId: number; name: string; email: string }> {
     try {
-      const user = await this.userService.findOneByEmail(payload.email);
+      const user = await this.userService.findOneByEmailOrUserName(
+        payload.email,
+        payload.username,
+      );
       if (user) {
-        throw new BadRequestAppException(ResponseMessage.EMAIL_ALREADY_EXISTS);
+        throw new BadRequestAppException(
+          ResponseMessage.EMAIL_OR_USERNAME_ALREADY_EXISTS,
+        );
       }
 
       payload.password = await hasher(payload.password);
@@ -38,6 +43,7 @@ export class AuthService {
         email: payload.email,
         password: payload.password,
         name: payload.name,
+        username: payload.username,
         phone_number: payload.phone_number,
         otp,
       });

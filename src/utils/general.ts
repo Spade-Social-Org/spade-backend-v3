@@ -10,6 +10,7 @@ import processEnvObj from '~/config/envs';
 import streamifier from 'streamifier';
 import { PaginationData } from '~/constant/interface';
 import { File, Web3Storage } from 'web3.storage';
+import { generateFromEmail, generateUsername } from 'unique-username-generator';
 
 cloudinary.config({
   cloud_name: processEnvObj.CLOUDINARY_CLOUD_NAME,
@@ -162,3 +163,14 @@ export const calculateAverage = (numbers: number[]): number => {
   const average = sum / numbers.length;
   return average;
 };
+export const suggestUserNameFromEmail = (email: string): string => {
+  return generateFromEmail(email, 4);
+};
+export function isImage(file: any) {
+  return file.mimetype.startsWith('image/');
+}
+
+// Example function to check if the file is a video based on MIME type
+export function isVideo(file: any) {
+  return file.mimetype.startsWith('video/');
+}

@@ -10,7 +10,7 @@ import { NotFoundAppException } from '~/http/exceptions/NotFoundAppException';
 import { ServerAppException } from '~/http/exceptions/ServerAppException';
 import { AppLogger } from '~/shared/AppLogger';
 
-import { fileUpload, generatePaginationMeta } from '~/utils/general';
+import { fileUpload, generatePaginationMeta, isVideo } from '~/utils/general';
 
 import { FileModel } from '~/database/models/FileModel';
 import {
@@ -157,10 +157,14 @@ export class PostService {
     fileArray?: string[],
   ): Promise<void> {
     try {
+      let fileType = FileType.IMAGE;
       let gallery: string[] = [];
       if (fileArray?.length) {
         gallery = fileArray;
       } else if (files?.length) {
+        if (isVideo(files[0])) {
+          fileType = FileType.VIDEO;
+        }
         gallery = await fileUpload(files);
       } else {
         return;
@@ -170,7 +174,7 @@ export class PostService {
       _file.file_path = gallery;
       _file.post = post;
       _file.entityType = FileEntityType.POST;
-      _file.file_type = FileType.IMAGE;
+      _file.file_type = fileType;
       await this.fileRepository.save(_file);
     } catch (error) {
       this.appLogger.logError(error);
@@ -192,6 +196,7 @@ export class PostService {
     let story = false;
     let query = `select 
     files.file_path as  gallery,
+    files.file_type as file_type,
     post.description ,
     post.id,
     post.created_at,

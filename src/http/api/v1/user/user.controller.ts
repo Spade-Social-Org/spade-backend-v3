@@ -122,6 +122,20 @@ export class UserController extends BaseAppController {
     const result = await this.userService.getUserProfile(id);
     return this.getHttpResponse().setDataWithKey('data', result).send(req, res);
   }
+  @Public()
+  @ApiOperation({ summary: ' suggest username' })
+  @ApiResponse({ status: 200, description: 'Ok.' })
+  @ApiResponse({ status: 500, description: 'Internal Server Error.' })
+  @Get('username/:email')
+  async suggestUserName(
+    @Param('email') email: string,
+    @nestjsRequest() req: any,
+    @Res() res: Response,
+  ) {
+    const result = await this.userService.suggestUserName(email);
+    return this.getHttpResponse().setDataWithKey('data', result).send(req, res);
+  }
+  //suggestUserName
   @ApiOperation({ summary: ' like users ' })
   @ApiResponse({ status: 200, description: 'Ok.' })
   @ApiResponse({ status: 500, description: 'Internal Server Error.' })

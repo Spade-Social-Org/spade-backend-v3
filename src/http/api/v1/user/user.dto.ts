@@ -22,6 +22,7 @@ export class CreateUserDto {
   password: string;
 
   name: string;
+  username?: string;
 
   phone_number: string;
   otp?: string;

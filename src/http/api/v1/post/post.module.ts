@@ -25,7 +25,7 @@ import { PostBookmarkModel } from '~/database/models/PostBookmarkModel';
     UserModule,
   ],
   providers: [PostService],
-  exports: [],
+  exports: [PostService],
   controllers: [PostController],
 })
 export class PostModule {}

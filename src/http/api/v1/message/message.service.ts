@@ -134,6 +134,8 @@ export class MessageService {
       newMessage.conversation = conversation;
       newMessage.content = payload.content;
       newMessage.user = senderExist;
+      newMessage.post_id = payload?.post_id as number;
+      newMessage.parent_message_id = payload?.parent_message_id as number;
 
       const message = await this.messageRepository.save(newMessage);
       if (payload.receiver_id) {
@@ -173,7 +175,13 @@ export class MessageService {
       u."name",
       u.id AS user_id,
       userFiles.file_url AS image,
+      ( select jsonb_build_object('id','pt.id','description','pt.description','gallery','files.file_path',
+      'file_type','files.file_type'
+       )from posts pt left join files files on files.post_id = pt.id  and files."entityType" = 'post'  where pt.id =m.post_id)as post,
+       ( select jsonb_build_object('id','msg.id','content','msg.content'
+        )from  messages msg  where msg.id =m.parent_message_id and msg.conversation_id=m.conversation_id)as parent_message,
       userFiles.file_path AS gallery
+      
   FROM
       conversations c
   INNER JOIN
@@ -233,5 +241,10 @@ export class MessageService {
       }
       throw new ServerAppException(ResponseMessage.SERVER_ERROR);
     }
+  }
+  async findOne(id: number) {
+    try {
+      return await this.messageRepository.findOne({ where: { id } });
+    } catch (error) {}
   }
 }

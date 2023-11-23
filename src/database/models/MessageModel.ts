@@ -12,6 +12,11 @@ export class MessageModel extends BaseModel {
   @Column({ type: 'int', nullable: true })
   conversation_id: number;
 
+  @Column({ type: 'int', nullable: true })
+  post_id: number;
+  @Column({ type: 'int', nullable: true })
+  parent_message_id: number;
+
   @Column({ type: 'text', nullable: true })
   content: string;
 

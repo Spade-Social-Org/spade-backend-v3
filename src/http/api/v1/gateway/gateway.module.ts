@@ -6,9 +6,15 @@ import { WebSocketGatewayServer } from './websocket.gateway';
 import { MatchModel } from '~/database/models/MatchModel';
 import { UserModule } from '../user/user.module';
 import { MessageModule } from '../message/message.module';
+import { PostModule } from '../post/post.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([MatchModel]), UserModule, MessageModule],
+  imports: [
+    TypeOrmModule.forFeature([MatchModel]),
+    UserModule,
+    MessageModule,
+    PostModule,
+  ],
   providers: [WebSocketGatewayServer],
 })
 export class GatewayModule {}

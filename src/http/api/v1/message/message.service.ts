@@ -151,9 +151,9 @@ export class MessageService {
             senderExist.id,
             message.id,
           ),
-          this.notificationService.sendPushNotifications(
-            pushNotificationPayload,
-          ),
+          // this.notificationService.sendPushNotifications(
+          //   pushNotificationPayload,
+          // ),
         ]);
       }
 

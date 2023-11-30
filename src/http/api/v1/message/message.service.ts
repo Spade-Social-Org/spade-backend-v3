@@ -172,6 +172,7 @@ export class MessageService {
       SELECT
       m."content",
       m.created_at,
+      m.id as message_id,
       u."name",
       u.id AS user_id,
       userFiles.file_url AS image,

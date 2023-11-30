@@ -72,6 +72,7 @@ export class WebSocketGatewayServer
     }
     this.server.to(`client-${receiver_id}`).emit('message.private', {
       content,
+      message_id: message?.id,
       sender_id: client.user.userId,
       name: client.user.name,
       post,
@@ -79,6 +80,7 @@ export class WebSocketGatewayServer
     });
     this.server.to(`client-${client.user.userId}`).emit('message.private', {
       content,
+      message_id: message?.id,
       sender_id: client.user.userId,
       name: client.user.name,
       post,

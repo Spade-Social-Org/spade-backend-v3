@@ -44,13 +44,68 @@ export class NotificationService {
     try {
       const user = await this.userService.findOneById(userId);
       if (!user) throw new NotFoundAppException(ResponseMessage.NOT_FOUND);
-      return await this.notificationRepository.find({
-        where: { user_id: userId },
-        relations: {
-          messageNotifications: true,
-          likeNotifications: true,
-        },
-      });
+      // return await this.notificationRepository.find({
+      //   where: { user_id: userId },
+      //   relations: {
+      //     messageNotifications: true,
+      //     likeNotifications: true,
+      //   },
+      // });
+      const query = `SELECT
+     n.*,
+     (
+       SELECT
+         jsonb_agg(
+           jsonb_build_object(
+             'id', mn.id,
+             'created_at', mn.created_at,
+             'sender_id', mn."sender_Id",
+             'updated_at', mn.updated_at,
+             'notification_id', mn.notification_id,
+             'message_id', mn.message_id,
+             'description', mn.description,
+             'sender_image_url',f.file_url,
+             'send_image_gallery',f.file_path
+             
+             
+           )
+         )
+       FROM
+         message_notifications mn
+         inner join users u  on u.id = mn."sender_Id"
+         left join files f on f.user_id = u.id and f."entityType" ='user' and f.file_type = 'image'
+       WHERE
+         mn.notification_id = n.id
+     ) AS messageNotifications,
+     (
+       SELECT
+         jsonb_agg(
+           jsonb_build_object(
+             'id', ln2.id,
+             'created_at', ln2.created_at,
+             'liker_id', ln2."liker_Id",
+             'updated_at', ln2.updated_at,
+             'notification_id', ln2.notification_id,
+             'description', ln2.description,
+             'sender_image_url',f.file_url,
+             'send_image_gallery',f.file_path
+             
+             
+           )
+         )
+       FROM
+         like_notifications ln2  
+         inner join users u  on u.id = ln2."liker_Id"
+         left join files f on f.user_id = u.id and f."entityType" ='user' and f.file_type = 'image'
+       WHERE
+         ln2.notification_id = n.id
+     ) AS likeNotifications
+   FROM
+     notifications n
+   WHERE
+     n.user_id = $1;
+   `;
+      return await dataSource.manager.query(query, [userId]);
     } catch (error) {
       console.error(error);
       this.appLogger.logError(error);

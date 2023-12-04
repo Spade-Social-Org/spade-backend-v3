@@ -9,6 +9,7 @@ import { NotificationController } from './notification.controller';
 import { NotificationModel } from '~/database/models/NotificationModel';
 import { messageNotificationModel } from '~/database/models/MessageNotificationModel';
 import { LikeNotificationModel } from '~/database/models/LikeNotificationModel';
+import { DatingNotificationModel } from '~/database/models/DatingNotification';
 
 @Module({
   imports: [
@@ -16,6 +17,7 @@ import { LikeNotificationModel } from '~/database/models/LikeNotificationModel';
       NotificationModel,
       messageNotificationModel,
       LikeNotificationModel,
+      DatingNotificationModel,
     ]),
 
     forwardRef(() => UserModule),

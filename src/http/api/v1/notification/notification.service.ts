@@ -22,6 +22,7 @@ import { LikeNotificationModel } from '~/database/models/LikeNotificationModel';
 import admin, { ServiceAccount } from 'firebase-admin';
 import fcm from 'fcm-notification';
 import credentials from './firebase.json';
+import { DatingNotificationModel } from '~/database/models/DatingNotification';
 const certPath = admin.credential.cert(credentials as ServiceAccount);
 const FCM = new fcm(certPath);
 
@@ -37,6 +38,8 @@ export class NotificationService {
     private notificationRepository: Repository<NotificationModel>,
     @InjectRepository(LikeNotificationModel)
     private LikeNotificationRepository: Repository<LikeNotificationModel>,
+    @InjectRepository(DatingNotificationModel)
+    private dateNotificationRepository: Repository<DatingNotificationModel>,
     @Inject(forwardRef(() => UserService))
     private userService: UserService,
   ) {}
@@ -99,7 +102,30 @@ export class NotificationService {
          left join files f on f.user_id = u.id and f."entityType" ='user' and f.file_type = 'image'
        WHERE
          ln2.notification_id = n.id
-     ) AS likeNotifications
+     ) AS likeNotifications,
+     (
+      SELECT
+        jsonb_agg(
+          jsonb_build_object(
+            'id', dn2.id,
+            'created_at', dn2.created_at,
+            'user_date_id', dn2."user_date_id",
+            'updated_at', dn2.updated_at,
+            'notification_id', dn2.notification_id,
+            'description', dn2.description,
+            'sender_image_url',f.file_url,
+            'send_image_gallery',f.file_path
+            
+            
+          )
+        )
+      FROM
+      dating_notifications dn2  
+        inner join users u  on u.id = dn2."user_date_id"
+        left join files f on f.user_id = u.id and f."entityType" ='user' and f.file_type = 'image'
+      WHERE
+      dn2.notification_id = n.id
+    ) AS dateNotifications
    FROM
      notifications n
    WHERE
@@ -187,6 +213,38 @@ export class NotificationService {
       throw new ServerAppException(ResponseMessage.SERVER_ERROR);
     }
   }
+  async saveDateNotifications(
+    userId: number,
+    userDateId: number,
+    dateId: number,
+    description: string,
+  ): Promise<void> {
+    try {
+      const [user, userDate] = await Promise.all([
+        this.userService.findOneById(userId),
+        this.userService.findOneById(userDateId),
+      ]);
+      if (!user) throw new NotFoundAppException(ResponseMessage.NOT_FOUND);
+      const notification = await this.saveNotifications(
+        user.id,
+        NotificationModelEnum.DATE,
+      );
+      await this.dateNotificationRepository.save({
+        notification_id: notification.id,
+        description,
+        user_date_id: userDateId,
+        date_id: dateId,
+      });
+    } catch (error) {
+      console.error(error);
+      this.appLogger.logError(error);
+      if (error instanceof BaseAppException) {
+        throw error;
+      }
+      throw new ServerAppException(ResponseMessage.SERVER_ERROR);
+    }
+  }
+
   async saveLikeNotifications(userId: number, likerId: number): Promise<void> {
     try {
       const [user, liker] = await Promise.all([

@@ -422,7 +422,9 @@ export class UserService {
           u.id AS user_id,
           u."name",
           userFiles.file_url as image,
-          userFiles.file_path as gallery
+          userFiles.file_path as gallery,
+          profile.longitude,
+          profile.latitude
           
       FROM matches m
       INNER JOIN users u ON
@@ -431,6 +433,7 @@ export class UserService {
               ELSE u.id = m.user_id_1
           END
       LEFT JOIN files userFiles ON userFiles.user_id = u.id AND userFiles."entityType" = 'user'
+      inner JOIN profiles profile ON profile.id = u.profile_id
       WHERE m.user_id_1 = $1 OR m.user_id_2 = $1;
       `;
       const users = await dataSource.manager.query(query, [userId]);

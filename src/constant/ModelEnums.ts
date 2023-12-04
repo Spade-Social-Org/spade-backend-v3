@@ -50,4 +50,5 @@ export enum BookmarkEnum {
 export enum NotificationModelEnum {
   MESSAGE = 'message',
   LIKE = 'like',
+  DATE = 'date',
 }

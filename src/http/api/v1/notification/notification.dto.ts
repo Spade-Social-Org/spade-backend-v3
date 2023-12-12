@@ -10,7 +10,7 @@ export class dateNotificationDto {
   @ApiProperty()
   @IsNotEmpty()
   @IsInt()
-  date_id: number;
+  date_id: string;
 
   @ApiProperty()
   @IsNotEmpty()

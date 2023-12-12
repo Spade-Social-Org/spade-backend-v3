@@ -216,7 +216,7 @@ export class NotificationService {
   async saveDateNotifications(
     userId: number,
     userDateId: number,
-    dateId: string,
+    dateId: number,
     description: string,
   ): Promise<void> {
     try {

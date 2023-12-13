@@ -9,8 +9,8 @@ export class dateNotificationDto {
 
   @ApiProperty()
   @IsNotEmpty()
-  @IsInt()
-  date_id: number;
+  @IsString()
+  date_id: string;
 
   @ApiProperty()
   @IsNotEmpty()

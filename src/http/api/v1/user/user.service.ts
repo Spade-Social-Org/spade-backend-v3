@@ -379,15 +379,15 @@ export class UserService {
     (
       6371 * acos(
         cos(
-          radians($1)
+           radians($2)
         ) * cos(
           radians(profile.latitude)
         ) * cos(
-          radians(profile.longitude) - radians($2)
+          radians(profile.longitude) -  radians($3)
         ) + sin(
-          radians($1)
-        ) * sin(
           radians($2)
+        ) * sin(
+           radians(profile.latitude)
         )
       )
     ) > 50

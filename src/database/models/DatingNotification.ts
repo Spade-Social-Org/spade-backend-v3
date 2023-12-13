@@ -10,8 +10,8 @@ export class DatingNotificationModel extends BaseModel {
   @Index()
   @Column({ type: 'int' })
   notification_id: number;
-  @Column({ type: 'int' })
-  date_id: number;
+  @Column({ type: 'varchar' })
+  date_id: string;
   @Column({ type: 'varchar' })
   description: string;
 

@@ -219,6 +219,7 @@ export class NotificationService {
     dateId: string,
     description: string,
   ): Promise<void> {
+    console.log(`saveDateNotifications`);
     try {
       const [user, userDate] = await Promise.all([
         this.userService.findOneById(userId),
